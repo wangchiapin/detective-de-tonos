@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>聲調偵探 · Detective de tonos</title>
+<style>
+html{color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:#f6f4ef;color:#2b2b2b;font:16px/1.5 system-ui,-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;-webkit-text-size-adjust:100%}
+#app{max-width:640px;margin:0 auto;padding:16px 14px 8px}
+h1{margin:4px 0 2px;font-size:22px;font-weight:600;letter-spacing:.04em}
+h1 small{display:block;font-size:13px;font-weight:400;color:#8a857b;letter-spacing:0}
+.bar{display:flex;flex-wrap:wrap;gap:6px 10px;margin:12px 0 8px;font-size:13px;color:#6f6a60}
+.bar .grp{display:flex;align-items:center;gap:4px}
+.seg{display:inline-flex;border:1px solid #cfc9bd;border-radius:6px;overflow:hidden;background:#fff}
+.seg button{border:0;background:transparent;padding:4px 9px;font:inherit;color:#6f6a60;cursor:pointer}
+.seg button+button{border-left:1px solid #e3ded3}
+.seg button.on{background:#2b2b2b;color:#fff}
+.note{font-size:13px;color:#6f6a60;background:#fff;border:1px solid #e3ded3;border-radius:6px;padding:8px 10px;margin:8px 0 12px}
+.note small{display:block;color:#8a857b;margin-top:2px}
+.card{background:#fff;border:1px solid #e3ded3;border-radius:8px;padding:14px 12px;margin-bottom:12px}
+.btn{border:1px solid #2b2b2b;background:#2b2b2b;color:#fff;border-radius:6px;padding:10px 18px;font:inherit;cursor:pointer}
+.btn.ghost{background:#fff;color:#2b2b2b}
+.btn[disabled]{opacity:.35;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.sub{color:#8a857b;font-size:13px}
+.choose{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 14px}
+.choose button{border:1px solid #cfc9bd;background:#fff;border-radius:8px;padding:14px 8px;font:inherit;cursor:pointer;text-align:center}
+.choose button.on{border-color:#2b2b2b;box-shadow:inset 0 0 0 1px #2b2b2b}
+.choose b{display:block;font-size:17px;font-weight:600}
+.choose span{display:block;font-size:12px;color:#8a857b;margin-top:2px}
+.prog{display:flex;justify-content:space-between;font-size:13px;color:#8a857b;margin-bottom:8px}
+.listen{display:flex;align-items:center;gap:10px;margin:2px 0 10px}
+.spk{width:52px;height:52px;border-radius:50%;border:1px solid #2b2b2b;background:#fff;font-size:22px;cursor:pointer}
+.words{display:flex;flex-wrap:wrap;gap:10px 14px;margin:6px 0 4px}
+.word{display:flex;gap:4px}
+.syl{width:46px;text-align:center}
+.hz{font-size:24px;line-height:1.2;min-height:29px}
+.py{font-size:15px;min-height:23px;font-weight:600;letter-spacing:.01em}
+.py.done{color:#2b2b2b}
+.tones{display:flex;flex-direction:column;gap:3px;margin-top:3px}
+.tones button{border:1px solid #cfc9bd;background:#fff;border-radius:5px;height:30px;padding:0;font:inherit;font-size:15px;cursor:pointer;color:#2b2b2b;line-height:1}
+.tones button small{font-size:10px;color:#8a857b;margin-left:3px}
+.tones button.on{background:#2b2b2b;color:#fff;border-color:#2b2b2b}
+.tones button.on small{color:#cfc9bd}
+.tones button[disabled]{cursor:default}
+.neu{font-size:12px;color:#8a857b;border:1px dashed #cfc9bd;border-radius:5px;padding:4px 0;margin-top:3px}
+.syl.ok .py{color:#3d6b4f}
+.syl.bad .py{color:#a8453a;text-decoration:line-through}
+.fix{font-size:15px;font-weight:600;color:#3d6b4f;min-height:20px}
+.res{margin-top:12px;padding-top:10px;border-top:1px solid #eee9de}
+.res .line{font-size:15px}
+.res .tr{color:#8a857b;font-size:14px;margin-top:2px}
+.score{font-size:15px;margin-bottom:6px}
+.big{font-size:34px;font-weight:600;margin:6px 0}
+.hint{font-size:12px;color:#8a857b;margin-top:6px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/*@@DATA@@*/
+</script>
+<script>
+(function(){
+/*@@SETTINGS@@*/
+
+/* ===== 遊戲專用設定（模式、等級） ===== */
+const GKEY='detectiveTonos.v1';
+function readG(){ let g={mode:'read',level:'all'}; try{ const s=JSON.parse(localStorage.getItem(GKEY)||'null'); if(s){ if(['read','listen'].includes(s.mode)) g.mode=s.mode; if(['all','A1','A2','B1'].includes(s.level)) g.level=s.level; } }catch(e){} return g; }
+function writeG(){ try{ localStorage.setItem(GKEY,JSON.stringify(G)); }catch(e){} }
+const G=readG();
+
+/* ===== 文字 ===== */
+const TXT={
+  title:{zh:['聲調偵探','声调侦探']},
+  scriptName:{zh:['文字','文字']},
+  note:{
+    zh:['聲調以「本調」為準：一寫 yī、不寫 bù，三聲連三聲都寫三聲。實際說話時會變調，這裡不算。','声调以“本调”为准：一写 yī、不写 bù，三声连三声都写三声。实际说话时会变调，这里不算。'],
+    es:'Se usa el tono original (el del diccionario): 一 = yī, 不 = bù, y varias sílabas seguidas con 3.º tono se marcan todas como 3.º. En el habla real cambian, pero aquí no cuenta.',
+    en:'We use the original (dictionary) tone: 一 = yī, 不 = bù, and several third tones in a row are all marked as third tone. They change in real speech, but that does not count here.'},
+  listenNote:{
+    zh:['機器唸的句子會自動變調，聽起來跟本調不一樣是正常的。','机器念的句子会自动变调，听起来跟本调不一样是正常的。'],
+    es:'La voz del dispositivo cambia los tonos sola; si suena distinto al tono original, es normal.',
+    en:'The device voice changes tones by itself; it is normal if it sounds different from the original tone.'},
+  modeRead:{zh:['看句子','看句子'],es:'Leer la frase',en:'Read the sentence'},
+  modeReadD:{zh:['看漢字和拼音，填聲調','看汉字和拼音，填声调'],es:'Mira los caracteres y el pinyin, pon los tonos',en:'See characters and pinyin, fill in tones'},
+  modeListen:{zh:['聽句子','听句子'],es:'Escuchar la frase',en:'Listen to the sentence'},
+  modeListenD:{zh:['聽句子和拼音，填聲調','听句子和拼音，填声调'],es:'Escucha la frase, mira el pinyin, pon los tonos',en:'Hear the sentence, see pinyin, fill in tones'},
+  level:{zh:['等級','等级'],es:'Nivel',en:'Level'},
+  all:{zh:['全部','全部'],es:'Todos',en:'All'},
+  speed:{zh:['語速','语速'],es:'Velocidad',en:'Speed'},
+  slow:{zh:['慢','慢'],es:'Lenta',en:'Slow'},normal:{zh:['中','中'],es:'Normal',en:'Normal'},fast:{zh:['快','快'],es:'Rápida',en:'Fast'},
+  start:{zh:['開始（10 題）','开始（10 题）'],es:'Empezar (10 frases)',en:'Start (10 sentences)'},
+  check:{zh:['檢查','检查'],es:'Comprobar',en:'Check'},
+  next:{zh:['下一題','下一题'],es:'Siguiente',en:'Next'},
+  finish:{zh:['看結果','看结果'],es:'Ver resultado',en:'See result'},
+  again:{zh:['再玩一次','再玩一次'],es:'Jugar otra vez',en:'Play again'},
+  home:{zh:['回首頁','回首页'],es:'Inicio',en:'Home'},
+  replay:{zh:['再聽一次','再听一次'],es:'Escuchar otra vez',en:'Listen again'},
+  neutral:{zh:['輕聲','轻声'],es:'tono neutro',en:'neutral'},
+  q:{zh:['第','第'],es:'Frase',en:'Sentence'},
+  goodSyl:{zh:['音節答對','音节答对'],es:'Sílabas correctas',en:'Syllables correct'},
+  perfect:{zh:['全對的句子','全对的句子'],es:'Frases perfectas',en:'Perfect sentences'},
+  result:{zh:['結果','结果'],es:'Resultado',en:'Result'},
+  fillAll:{zh:['每個音節都選好聲調才能檢查','每个音节都选好声调才能检查'],es:'Elige el tono de todas las sílabas para comprobar',en:'Choose a tone for every syllable to check'},
+  listenFirst:{zh:['按喇叭聽句子；檢查後才會顯示漢字','按喇叭听句子；检查后才会显示汉字'],es:'Pulsa el altavoz para oír la frase; los caracteres aparecen al comprobar',en:'Tap the speaker to hear the sentence; characters appear after checking'}
+};
+function tx(k){ const t=TXT[k]; const simp=Settings.script==='simp'; let z=t.zh[simp?1:0]; if(Settings.lang==='zh'||!(t.es||t.en)) return z; const o=Settings.lang==='en'?t.en:t.es; return z+(o?' · '+o:''); }
+function tz(k){ const t=TXT[k]; return t.zh[Settings.script==='simp'?1:0]; }
+function tl(k){ const t=TXT[k]; return Settings.lang==='en'?t.en:t.es; }
+
+/* ===== 聲調標記 ===== */
+const VM={a:'āáǎà',e:'ēéěè',i:'īíǐì',o:'ōóǒò',u:'ūúǔù','ü':'ǖǘǚǜ'};
+function mark(p,t){
+  if(!t) return p;
+  let idx=p.indexOf('a'); if(idx<0) idx=p.indexOf('e');
+  if(idx<0){ const k=p.indexOf('ou'); if(k>=0) idx=k; }
+  if(idx<0){ for(let i=p.length-1;i>=0;i--) if('iouü'.indexOf(p[i])>=0){idx=i;break;} }
+  if(idx<0) return p;
+  return p.slice(0,idx)+VM[p[idx]][t-1]+p.slice(idx+1);
+}
+const TMARK=['','ˉ','ˊ','ˇ','ˋ'];
+
+/* ===== 語音 ===== */
+function pickVoice(){
+  let vs=[]; try{ vs=window.speechSynthesis.getVoices()||[]; }catch(e){}
+  const ok=v=>{ const l=String(v.lang||'').toLowerCase().replace(/_/g,'-'); if(l.indexOf('yue')===0||l.indexOf('zh-hk')===0) return false; return l==='zh'||l.indexOf('zh-')===0||l.indexOf('cmn')===0; };
+  const tw=vs.filter(v=>{ const l=String(v.lang||'').toLowerCase().replace(/_/g,'-'); return l==='zh-tw'||l==='cmn-tw'||l.indexOf('zh-tw')===0; });
+  return tw[0]||vs.filter(ok)[0]||null;
+}
+function speak(text){
+  try{
+    const ss=window.speechSynthesis; if(!ss) return; ss.cancel();
+    const u=new SpeechSynthesisUtterance(text); u.lang='zh-TW';
+    const v=pickVoice(); if(v){ u.voice=v; u.lang=v.lang; }
+    u.rate=RATE_VALUE[Settings.rate]||0.65; ss.speak(u);
+  }catch(e){}
+}
+
+/* ===== 遊戲狀態 ===== */
+const app=document.getElementById('app');
+let screen='home', qs=[], qi=0, ans=[], checked=false, tot={syl:0,good:0,perfect:0};
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function sentText(s){ return (Settings.script==='simp'?s.s:s.t).join(''); }
+function top(){ window.scrollTo(0,0); }
+
+function header(){
+  const lv=['all','A1','A2','B1'];
+  return `<h1>${tz('title')}<small>Detective de tonos</small></h1>
+  <div class="bar">
+    <div class="grp"><span>${tz('scriptName')}</span><span class="seg" id="sgScript"><button data-v="trad" class="${Settings.script==='trad'?'on':''}">繁</button><button data-v="simp" class="${Settings.script==='simp'?'on':''}">简</button></span></div>
+    <div class="grp"><span>Idioma</span><span class="seg" id="sgLang"><button data-v="es" class="${Settings.lang==='es'?'on':''}">ES</button><button data-v="en" class="${Settings.lang==='en'?'on':''}">EN</button><button data-v="zh" class="${Settings.lang==='zh'?'on':''}">中文</button></span></div>
+  </div>
+  <div class="note">${tz('note')}${Settings.lang==='zh'?'':`<small>${tl('note')}</small>`}${G.mode==='listen'?`<div style="margin-top:6px">${tz('listenNote')}${Settings.lang==='zh'?'':`<small>${tl('listenNote')}</small>`}</div>`:''}</div>`;
+}
+function bindHeader(){
+  document.querySelectorAll('#sgScript button').forEach(b=>b.onclick=()=>{ Settings.script=b.dataset.v; writeSettings(Settings); render(true); });
+  document.querySelectorAll('#sgLang button').forEach(b=>b.onclick=()=>{ Settings.lang=b.dataset.v; writeSettings(Settings); render(true); });
+}
+
+function renderHome(){
+  const lvs=['all','A1','A2','B1'];
+  app.innerHTML=header()+`<div class="card">
+    <div class="choose" id="chMode">
+      <button data-v="read" class="${G.mode==='read'?'on':''}"><b>${tz('modeRead')}</b><span>${tz('modeReadD')}${Settings.lang==='zh'?'':'<br>'+tl('modeReadD')}</span></button>
+      <button data-v="listen" class="${G.mode==='listen'?'on':''}"><b>${tz('modeListen')}</b><span>${tz('modeListenD')}${Settings.lang==='zh'?'':'<br>'+tl('modeListenD')}</span></button>
+    </div>
+    <div class="row" style="margin-bottom:10px"><span class="sub">${tx('level')}</span><span class="seg" id="sgLv">${lvs.map(l=>`<button data-v="${l}" class="${G.level===l?'on':''}">${l==='all'?tz('all'):l}</button>`).join('')}</span></div>
+    <div class="row" style="margin-bottom:14px"><span class="sub">${tx('speed')}</span><span class="seg" id="sgRate">${['slow','normal','fast'].map(r=>`<button data-v="${r}" class="${Settings.rate===r?'on':''}">${tz(r)}</button>`).join('')}</span></div>
+    <button class="btn" id="bStart">${tz('start')}</button>${Settings.lang==='zh'?'':`<div class="sub" style="margin-top:4px">${tl('start')}</div>`}
+  </div>`;
+  bindHeader();
+  document.querySelectorAll('#chMode button').forEach(b=>b.onclick=()=>{ G.mode=b.dataset.v; writeG(); render(true); });
+  document.querySelectorAll('#sgLv button').forEach(b=>b.onclick=()=>{ G.level=b.dataset.v; writeG(); render(true); });
+  document.querySelectorAll('#sgRate button').forEach(b=>b.onclick=()=>{ Settings.rate=b.dataset.v; writeSettings(Settings); render(true); });
+  document.getElementById('bStart').onclick=startGame;
+}
+
+function startGame(){
+  const pool=SENTENCES.filter(s=>G.level==='all'||s.lv===G.level);
+  qs=shuffle(pool).slice(0,10); qi=0; tot={syl:0,good:0,perfect:0}; screen='play';
+  try{ HGPlays.start(G.mode+'_'+G.level); }catch(e){}
+  newQ();
+}
+function newQ(){ const s=qs[qi]; ans=s.a.map(a=>a===0?0:null); checked=false; render(true); if(G.mode==='listen') speak(sentText(s)); }
+
+function renderPlay(){
+  const s=qs[qi], listen=G.mode==='listen', simp=Settings.script==='simp';
+  const chars=simp?s.s:s.t;
+  let html=header()+`<div class="card"><div class="prog"><span>${tz('q')} ${qi+1} / ${qs.length}</span><span>${s.lv}</span></div>`;
+  if(listen) html+=`<div class="listen"><button class="spk" id="bSpk" aria-label="${tz('replay')}">🔊</button><div class="sub">${checked?tz('replay'):tz('listenFirst')}${Settings.lang==='zh'?'':'<br>'+(checked?tl('replay'):tl('listenFirst'))}</div></div>`;
+  html+='<div class="words">';
+  let pos=0;
+  s.w.forEach(n=>{
+    html+='<div class="word">';
+    for(let k=0;k<n;k++){
+      const i=pos+k, a=s.a[i], neutral=a===0, v=ans[i];
+      let cls='syl', py=s.p[i], fix='';
+      if(checked&&!neutral){ cls+=v===a?' ok':' bad'; if(v!==a) fix=mark(s.p[i],a); }
+      const shown=neutral?s.p[i]:(v?mark(s.p[i],v):s.p[i]);
+      const hz=(!listen||checked)?chars[i]:'';
+      html+=`<div class="${cls}" data-i="${i}"><div class="hz">${hz}</div><div class="py${v&&!neutral?' done':''}">${shown}</div>`;
+      if(neutral) html+=`<div class="neu">${tz('neutral')}</div>`;
+      else html+=`<div class="tones">${[1,2,3,4].map(t=>`<button data-t="${t}" class="${v===t?'on':''}" ${checked?'disabled':''} aria-label="tone ${t}">${TMARK[t]}<small>${t}</small></button>`).join('')}</div>`;
+      if(checked&&!neutral) html+=`<div class="fix">${v===a?'':fix}</div>`;
+      html+='</div>';
+    }
+    pos+=n; html+='</div>';
+  });
+  html+='</div>';
+  const filled=ans.every(x=>x!==null);
+  if(!checked){
+    html+=`<div class="row" style="margin-top:12px"><button class="btn" id="bCheck" ${filled?'':'disabled'}>${tz('check')}</button>${filled?'':`<span class="sub">${tz('fillAll')}</span>`}</div>`;
+  } else {
+    const bad=s.a.reduce((n,a,i)=>n+(a!==0&&ans[i]!==a?1:0),0), need=s.a.filter(a=>a!==0).length;
+    const full=chars.map((c,i)=>c).join('');
+    const fullPy=s.w.reduce((acc,n)=>{ const word=[]; for(let k=0;k<n;k++){ word.push(mark(s.p[acc.p+k],s.a[acc.p+k])); } acc.out.push(word.join(' ')); acc.p+=n; return acc; },{out:[],p:0}).out.join(' ');
+    html+=`<div class="res"><div class="score">${need-bad} / ${need} ${tz('goodSyl')}${bad===0?' ✓':''}</div><div class="line">${full}</div><div class="line" style="color:#6f6a60">${fullPy}</div>${Settings.lang==='zh'?'':`<div class="tr">${Settings.lang==='en'?s.en:s.es}</div>`}
+    <div class="row" style="margin-top:12px"><button class="btn ghost" id="bSpk2">🔊 ${tz('replay')}</button><button class="btn" id="bNext">${qi+1<qs.length?tz('next'):tz('finish')}</button></div></div>`;
+  }
+  html+='</div>';
+  app.innerHTML=html; bindHeader();
+  app.querySelectorAll('.syl').forEach(el=>{
+    el.querySelectorAll('.tones button').forEach(b=>b.onclick=()=>{ if(checked) return; ans[+el.dataset.i]=+b.dataset.t; renderPlay(); });
+  });
+  const sp=document.getElementById('bSpk'); if(sp) sp.onclick=()=>speak(sentText(s));
+  const sp2=document.getElementById('bSpk2'); if(sp2) sp2.onclick=()=>speak(sentText(s));
+  const bc=document.getElementById('bCheck'); if(bc) bc.onclick=doCheck;
+  const bn=document.getElementById('bNext'); if(bn) bn.onclick=()=>{ if(qi+1<qs.length){ qi++; newQ(); } else { screen='result'; render(true); try{ HGPlays.end({score:tot.good}); }catch(e){} } };
+}
+function doCheck(){
+  const s=qs[qi]; checked=true; let bad=0, need=0;
+  s.a.forEach((a,i)=>{ if(a!==0){ need++; if(ans[i]!==a) bad++; } });
+  tot.syl+=need; tot.good+=need-bad; if(bad===0) tot.perfect++;
+  renderPlay();
+}
+function renderResult(){
+  app.innerHTML=header()+`<div class="card"><div class="sub">${tz('result')}</div><div class="big">${tot.good} / ${tot.syl}</div><div class="score">${tz('goodSyl')}</div><div class="score">${tz('perfect')}：${tot.perfect} / ${qs.length}</div>
+  <div class="row" style="margin-top:12px"><button class="btn" id="bAgain">${tz('again')}</button><button class="btn ghost" id="bHome">${tz('home')}</button></div></div>`;
+  bindHeader();
+  document.getElementById('bAgain').onclick=startGame;
+  document.getElementById('bHome').onclick=()=>{ screen='home'; render(true); };
+}
+function render(scroll){
+  if(screen==='home') renderHome(); else if(screen==='play') renderPlay(); else renderResult();
+  document.documentElement.lang=Settings.script==='simp'?'zh-Hans':'zh-Hant';
+  if(scroll) top();
+}
+render();
+})();
+</script>
+<script>
+/*@@VOICEHINT@@*/
+</script>
+<script>
+/*@@COPYRIGHT@@*/
+</script>
+/*@@PLAYS@@*/
+</body>
+</html>
