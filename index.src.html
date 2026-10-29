@@ -119,6 +119,17 @@ h1 svg.hat{width:28px;margin:0 0 0 6px;vertical-align:-4px}
 .lbrow .s{font-weight:600}
 .lbrow.me{background:#f3ead2}
 .lbmsg{font-size:13px;color:#5c5139;min-height:20px;margin-top:6px}
+.repbtn{border:0;background:none;color:#8a7f66;font:inherit;font-size:12.5px;padding:8px 2px 2px;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
+.repbox{margin-top:12px;border:1px dashed #b8a67f;border-radius:4px;background:#f6efdc;padding:10px}
+.repbox b{font-size:14px;color:#5c5139}
+.repbox .rw{display:flex;flex-direction:column;gap:6px;margin:8px 0}
+.repbox .rw button{border:1px solid #b8a67f;background:#fffdf6;border-radius:4px;padding:7px 10px;font:inherit;font-size:14px;color:#5c5139;cursor:pointer;text-align:left}
+.repbox .rw button.on{background:#2b2b2b;color:#fff;border-color:#2b2b2b}
+.repbox input{width:100%;border:1px solid #b8a67f;border-radius:4px;padding:8px 10px;font:inherit;font-size:16px;background:#fffdf6;margin:0 0 8px}
+.repmsg{font-size:13px;color:#5c5139;margin:0 0 8px}
+.repmsg.ok{color:#3d6b4f;margin:10px 0 0}
+.repmsg.no{color:#a8453a}
+.repbox .row .btn{flex:1;min-height:42px}
 </style>
 <meta name="description" content="看拼音填聲調，看句子、聽句子都能玩 · Pon los tonos al pinyin: lee o escucha la frase">
 <meta property="og:type" content="website">
@@ -204,7 +215,20 @@ const TXT={
   boardNote:{zh:['分數是答對率；只有選「全部」玩的 10 題會上榜，每台裝置只留最高分。','分数是答对率；只有选“全部”玩的 10 题会上榜，每台装置只留最高分。'],es:'La puntuación es el porcentaje de aciertos; solo cuentan las partidas de 10 frases con «Todos», y se guarda tu mejor marca.',en:'The score is your accuracy; only 10-sentence rounds with “All” count, and your best is kept.'},
   back:{zh:['返回','返回'],es:'Volver',en:'Back'},
   accuracy:{zh:['答對率','答对率'],es:'Aciertos',en:'Accuracy'},
-  listenFirst:{zh:['按喇叭聽句子','按喇叭听句子'],es:'Pulsa para escuchar',en:'Tap to listen'}
+  listenFirst:{zh:['按喇叭聽句子','按喇叭听句子'],es:'Pulsa para escuchar',en:'Tap to listen'},
+  flag:{zh:['這題怪怪的','这题怪怪的'],es:'Algo raro en esta frase',en:'Something looks wrong'},
+  rWhy:{zh:['哪裡怪怪的？','哪里怪怪的？'],es:'¿Qué pasa?',en:'What is wrong?'},
+  r_wrong:{zh:['標準答案好像不對','标准答案好像不对'],es:'La respuesta correcta parece errónea',en:'The correct answer seems wrong'},
+  r_voice:{zh:['機器唸的聲音怪怪的','机器念的声音怪怪的'],es:'La voz suena rara',en:'The voice sounds odd'},
+  r_text:{zh:['拼音或句子有錯','拼音或句子有错'],es:'Hay un error en el pinyin o la frase',en:'Error in the pinyin or sentence'},
+  r_other:{zh:['其他','其他'],es:'Otro',en:'Other'},
+  rNote:{zh:['想補充的話（最多 100 字）','想补充的话（最多 100 字）'],es:'Comentario (máx. 100 caracteres)',en:'Comment (max 100 characters)'},
+  rCancel:{zh:['取消','取消'],es:'Cancelar',en:'Cancel'},
+  rSend:{zh:['送出','送出'],es:'Enviar',en:'Send'},
+  rSent:{zh:['已送出，謝謝你的回報','已送出，谢谢你的反馈'],es:'Enviado, ¡gracias!',en:'Sent, thank you!'},
+  rPick:{zh:['請先選一個原因','请先选一个原因'],es:'Elige un motivo',en:'Pick a reason'},
+  rSending:{zh:['送出中…','送出中…'],es:'Enviando…',en:'Sending…'},
+  rFail:{zh:['送出失敗，請檢查網路再試一次','送出失败，请检查网络再试一次'],es:'No se pudo enviar. Revisa la conexión',en:'Could not send. Check your connection'}
 };
 function tx(k){ const t=TXT[k]; const simp=Settings.script==='simp'; let z=t.zh[simp?1:0]; if(Settings.lang==='zh'||!(t.es||t.en)) return z; const o=Settings.lang==='en'?t.en:t.es; return z+(o?' · '+o:''); }
 function tz(k){ const t=TXT[k]; return t.zh[Settings.script==='simp'?1:0]; }
@@ -285,6 +309,7 @@ function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;'
 /* ===== 遊戲狀態 ===== */
 const app=document.getElementById('app');
 let boardMode='read', screen='home', qs=[], qi=0, ans=[], checked=false, tot={syl:0,good:0,perfect:0};
+let rep=null;
 function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 function sentText(s){ return (Settings.script==='simp'?s.s:s.t).join(''); }
 function top(){ window.scrollTo(0,0); }
@@ -346,7 +371,62 @@ function startGame(){
   try{ HGPlays.start(G.mode+'_'+G.level); }catch(e){}
   newQ();
 }
-function newQ(){ const s=qs[qi]; ans=s.a.map(a=>a===0?0:null); checked=false; render(true); if(G.mode==='listen') speak(sentText(s)); }
+function newQ(){ const s=qs[qi]; ans=s.a.map(a=>a===0?0:null); checked=false; rep=null; render(true); if(G.mode==='listen') speak(sentText(s)); }
+
+/* ===== 🚩 這題怪怪的：學生回報題目（存到中央專案 subscription-48d3c 的 game_reports，game:'tonos'；只有 Ben 在分享區 stats.html「問題回報」看得到）=====
+   按了才連線（匿名登入）；送出的欄位要跟 Firestore 規則 game_reports 的 tonos 分支一致 */
+const REP_CENTRAL={apiKey:"AIzaSyCHZz8Hh7m45bJfZC9aK_f_NvUD-aUeuzU",authDomain:"subscription-48d3c.firebaseapp.com",projectId:"subscription-48d3c",storageBucket:"subscription-48d3c.firebasestorage.app",messagingSenderId:"276281656991",appId:"1:276281656991:web:de242ba22373816c3044aa"};
+const REP_VER='tonos-r1';
+let repP=null;
+function repConn(){
+  if(repP) return repP;
+  const CDN='https://www.gstatic.com/firebasejs/10.12.2/';
+  repP=(async()=>{
+    const A=await import(CDN+'firebase-app.js'),Au=await import(CDN+'firebase-auth.js'),F=await import(CDN+'firebase-firestore.js');
+    let app; try{ app=A.getApp('central'); }catch(e){ app=A.initializeApp(REP_CENTRAL,'central'); }
+    const auth=Au.getAuth(app); if(!auth.currentUser) await Au.signInAnonymously(auth);
+    return {F,db:F.getFirestore(app)};
+  })().catch(e=>{ repP=null; throw e; });
+  return repP;
+}
+function repWhys(){ return G.mode==='listen'?['wrong','voice','text','other']:['wrong','text','other']; }
+function repHtml(){
+  const r=rep;
+  if(!r) return `<button class="repbtn" id="bRep">🚩 ${tx('flag')}</button>`;
+  if(r.st==='ok') return `<div class="repmsg ok">✅ ${tx('rSent')}</div>`;
+  const busy=r.st==='sending', ph=tz('rNote')+(Settings.lang==='zh'?'':' · '+tl('rNote'));
+  return `<div class="repbox"><b>🚩 ${tx('rWhy')}</b><div class="rw">${repWhys().map(k=>`<button data-w="${k}" class="${r.why===k?'on':''}" ${busy?'disabled':''}>${tx('r_'+k)}</button>`).join('')}</div>`
+    +`<input id="repNote" type="text" maxlength="100" value="${esc(r.note)}" placeholder="${esc(ph)}" ${busy?'disabled':''}>`
+    +(r.msg?`<div class="repmsg${r.st==='err'||r.msg==='rPick'?' no':''}">${tx(r.msg)}</div>`:'')
+    +`<div class="row"><button class="btn ghost" id="repCancel" ${busy?'disabled':''}>${tx('rCancel')}</button><button class="btn" id="repSend" ${busy?'disabled':''}>${tx('rSend')}</button></div></div>`;
+}
+function drawRep(){ const el=document.getElementById('rep'); if(el){ el.innerHTML=repHtml(); bindRep(); } }
+function bindRep(){
+  const b=document.getElementById('bRep'); if(b) b.onclick=()=>{ rep={why:'',note:'',st:'',msg:''}; drawRep(); };
+  const c=document.getElementById('repCancel'); if(c) c.onclick=()=>{ rep=null; drawRep(); };
+  const s=document.getElementById('repSend'); if(s) s.onclick=repSend;
+  const n=document.getElementById('repNote'); if(n) n.oninput=()=>{ rep.note=n.value; };
+  document.querySelectorAll('#rep .rw button').forEach(x=>x.onclick=()=>{
+    const nn=document.getElementById('repNote'); if(nn) rep.note=nn.value;
+    rep.why=x.dataset.w; if(rep.msg==='rPick') rep.msg=''; drawRep();
+  });
+}
+function repData(){
+  const s=qs[qi], py=a=>s.p.map((p,i)=>mark(p,a[i])).join(' ');
+  return {game:'tonos',why:rep.why,note:String(rep.note||'').trim().slice(0,100),id:s.id,lv:s.lv,mode:G.mode,han:s.t.join(''),py:s.p.join(' '),ans:py(s.a),pick:py(ans),lang:Settings.lang,ver:REP_VER};
+}
+async function repSend(){
+  const r=rep; if(!r||r.st==='sending') return;
+  const n=document.getElementById('repNote'); if(n) r.note=n.value;
+  if(!r.why){ r.msg='rPick'; return drawRep(); }
+  const data=repData(); r.st='sending'; r.msg='rSending'; drawRep();
+  try{
+    const L=await repConn();
+    await L.F.addDoc(L.F.collection(L.db,'game_reports'),Object.assign(data,{done:false,at:L.F.serverTimestamp()}));
+    r.st='ok'; r.msg='';
+  }catch(e){ r.st='err'; r.msg='rFail'; }
+  if(rep===r) drawRep();
+}
 
 function renderPlay(){
   const s=qs[qi], listen=G.mode==='listen', simp=Settings.script==='simp';
@@ -380,7 +460,7 @@ function renderPlay(){
     const full=chars.map((c,i)=>c).join('');
     const fullPy=s.w.reduce((acc,n)=>{ const word=[]; for(let k=0;k<n;k++){ word.push(mark(s.p[acc.p+k],s.a[acc.p+k])); } acc.out.push(word.join(' ')); acc.p+=n; return acc; },{out:[],p:0}).out.join(' ');
     html+=`<div class="res"><div class="score">${need-bad} / ${need} ${tz('goodSyl')}${bad===0?' ✓':''}</div><div class="line">${full}</div><div class="line" style="color:#6f6a60">${fullPy}</div>${Settings.lang==='zh'?'':`<div class="tr">${Settings.lang==='en'?s.en:s.es}</div>`}
-    <div class="row" style="margin-top:12px">${listen?'':`<button class="btn ghost" id="bSpk2">🔊 ${tz('replay')}</button>`}<button class="btn" id="bNext">${qi+1<qs.length?tz('next'):tz('finish')}</button></div></div>`;
+    <div class="row" style="margin-top:12px">${listen?'':`<button class="btn ghost" id="bSpk2">🔊 ${tz('replay')}</button>`}<button class="btn" id="bNext">${qi+1<qs.length?tz('next'):tz('finish')}</button></div><div id="rep">${repHtml()}</div></div>`;
   }
   html+='</div>';
   app.innerHTML=html; bindHeader();
@@ -390,6 +470,7 @@ function renderPlay(){
   const sp=document.getElementById('bSpk'); if(sp) sp.onclick=()=>speak(sentText(s));
   const sp2=document.getElementById('bSpk2'); if(sp2) sp2.onclick=()=>speak(sentText(s));
   const bc=document.getElementById('bCheck'); if(bc) bc.onclick=doCheck;
+  bindRep();
   const bn=document.getElementById('bNext'); if(bn) bn.onclick=()=>{ if(qi+1<qs.length){ qi++; newQ(); } else { screen='result'; render(true); try{ HGPlays.end({score:tot.good}); }catch(e){} } };
 }
 function doCheck(){
