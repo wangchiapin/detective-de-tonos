@@ -11,6 +11,16 @@ body{margin:0;background:#dccdae;background-image:repeating-linear-gradient(0deg
 #app{max-width:640px;margin:0 auto;padding:16px 14px 8px}
 h1{margin:4px 0 2px;font-size:22px;font-weight:600;letter-spacing:.04em}
 .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.top h1{min-width:0}
+@media(max-width:480px){.l2{display:none}}
+.tb{display:flex;gap:6px;flex:none;margin-top:6px}
+.tb .help{margin-top:0;display:inline-flex;align-items:center;gap:5px}
+.help svg{width:15px;height:15px}
+.modal{position:fixed;inset:0;z-index:20;background:rgba(43,43,43,.45);display:flex;align-items:center;justify-content:center;padding:20px}
+.modal .box{background:#fffdf6;border:1px solid #c9b88f;border-radius:6px;padding:20px 18px 16px;max-width:340px;width:100%;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.modal p{margin:0 0 14px;font-size:16px}
+.modal small{display:block;color:#7a6e55;font-size:13px}
+@media(min-width:900px){#app{zoom:1.25;max-width:760px}}
 .help{flex:none;margin-top:6px;border:1px solid #b8a67f;background:#fffdf6;border-radius:4px;padding:5px 10px;font:inherit;font-size:13px;color:#5c5139;cursor:pointer;white-space:nowrap}
 .help.on{background:#2b2b2b;color:#fff;border-color:#2b2b2b}
 h1 svg{width:22px;height:22px;vertical-align:-3px;margin-right:6px}
@@ -167,6 +177,10 @@ const TXT={
   finish:{zh:['看結果','看结果'],es:'Ver resultado',en:'See result'},
   again:{zh:['再玩一次','再玩一次'],es:'Jugar otra vez',en:'Play again'},
   home:{zh:['回首頁','回首页'],es:'Inicio',en:'Home'},
+  menu:{zh:['主選單','主选单'],es:'Menú',en:'Menu'},
+  leaveQ:{zh:['離開這一輪？這輪成績不會算','离开这一轮？这轮成绩不会算'],es:'¿Salir de esta ronda? No se guardará el puntaje',en:'Leave this round? Your score won\'t be saved'},
+  leave:{zh:['離開','离开'],es:'Salir',en:'Leave'},
+  stay:{zh:['繼續玩','继续玩'],es:'Seguir',en:'Keep playing'},
   replay:{zh:['再聽一次','再听一次'],es:'Escuchar otra vez',en:'Listen again'},
   neutral:{zh:['輕聲','轻声'],es:'tono neutro',en:'neutral'},
   q:{zh:['第','第'],es:'Frase',en:'Sentence'},
@@ -280,16 +294,21 @@ const HAT='<svg class="hat" viewBox="0 0 32 24" fill="none" stroke="currentColor
 const FOOT='<svg class="f" viewBox="0 0 10 17" fill="currentColor" aria-hidden="true"><ellipse cx="5" cy="5.2" rx="3.7" ry="5"/><ellipse cx="5" cy="13.6" rx="2.7" ry="3"/></svg>';
 function steps(i,n){ let s=''; for(let k=0;k<n;k++) s+=`<i class="ft${k<i?' past':k===i?' now':''}${k%2?' r':''}">${FOOT}</i>`; return `<span class="steps" role="img" aria-label="${i+1} / ${n}">${s}</span>`; }
 function rankIcon(score){ return `<span class="rk">${score>=950?HAT:score>=800?FOOT+FOOT:MAG}</span>`; }
-let helpOpen=false;
+const DOOR='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21V4.5A1.5 1.5 0 0 1 7.5 3h9A1.5 1.5 0 0 1 18 4.5V21M4 21h16"/><circle cx="14.5" cy="12.5" r="1"/></svg>';
+let helpOpen=false, leaveAsk=false;
+const wideMQ=window.matchMedia('(min-width:900px)');
 function header(){
-  return `<div class="top"><h1>${MAG}${tz('title')}${HAT}<small>Detective de tonos</small></h1><button class="help${helpOpen?' on':''}" id="bHelp">ℹ ${tz('help')}${Settings.lang==='zh'?'':' · '+tl('help')}</button></div>
+  return `<div class="top"><h1>${MAG}${tz('title')}${HAT}<small>Detective de tonos</small></h1><div class="tb">${screen==='play'?`<button class="help" id="bMenu">${DOOR}${tz('menu')}${Settings.lang==='zh'?'':'<span class="l2"> · '+tl('menu')+'</span>'}</button>`:''}<button class="help${helpOpen?' on':''}" id="bHelp">ℹ ${tz('help')}${Settings.lang==='zh'?'':'<span class="l2"> · '+tl('help')+'</span>'}</button></div></div>
   <div class="bar">
     <div class="grp"><span>${tz('scriptName')}</span><span class="seg" id="sgScript"><button data-v="trad" class="${Settings.script==='trad'?'on':''}">繁</button><button data-v="simp" class="${Settings.script==='simp'?'on':''}">简</button></span></div>
     <div class="grp"><span>Idioma</span><span class="seg" id="sgLang"><button data-v="es" class="${Settings.lang==='es'?'on':''}">ES</button><button data-v="en" class="${Settings.lang==='en'?'on':''}">EN</button><button data-v="zh" class="${Settings.lang==='zh'?'on':''}">中文</button></span></div>
   </div>
-  ${helpOpen?`<div class="note">${tz('note')}${Settings.lang==='zh'?'':`<small>${tl('note')}</small>`}${G.mode==='listen'?`<div style="margin-top:6px">${tz('listenNote')}${Settings.lang==='zh'?'':`<small>${tl('listenNote')}</small>`}</div>`:''}</div>`:''}<div class="trace" aria-hidden="true"></div>`;
+  ${helpOpen?`<div class="note">${tz('note')}${Settings.lang==='zh'?'':`<small>${tl('note')}</small>`}${G.mode==='listen'?`<div style="margin-top:6px">${tz('listenNote')}${Settings.lang==='zh'?'':`<small>${tl('listenNote')}</small>`}</div>`:''}</div>`:''}<div class="trace" aria-hidden="true"></div>${leaveAsk?`<div class="modal"><div class="box"><p>${tz('leaveQ')}${Settings.lang==='zh'?'':`<small>${tl('leaveQ')}</small>`}</p><div class="row"><button class="btn" id="bLeave">${tz('leave')}</button><button class="btn ghost" id="bStay">${tz('stay')}</button></div></div></div>`:''}`;
 }
 function bindHeader(){
+  const bm=document.getElementById('bMenu'); if(bm) bm.onclick=()=>{ leaveAsk=true; render(false); };
+  const bl=document.getElementById('bLeave'); if(bl) bl.onclick=()=>{ leaveAsk=false; screen='home'; render(true); };
+  const bs=document.getElementById('bStay'); if(bs) bs.onclick=()=>{ leaveAsk=false; render(false); };
   const hb=document.getElementById('bHelp'); if(hb) hb.onclick=()=>{ helpOpen=!helpOpen; render(false); };
   document.querySelectorAll('#sgScript button').forEach(b=>b.onclick=()=>{ Settings.script=b.dataset.v; writeSettings(Settings); render(true); });
   document.querySelectorAll('#sgLang button').forEach(b=>b.onclick=()=>{ Settings.lang=b.dataset.v; writeSettings(Settings); render(true); });
@@ -334,7 +353,7 @@ function renderPlay(){
   const chars=simp?s.s:s.t;
   let html=header()+`<div class="card"><div class="prog"><span class="tag">${tz('case')} ${s.id}</span>${steps(qi,qs.length)}</div>`;
   if(listen) html+=`<div class="listen"><button class="spk" id="bSpk" aria-label="${tz('replay')}">🔊</button><span class="reels"><i></i><i></i></span><div class="sub">${checked?tz('replay'):tz('listenFirst')}${Settings.lang==='zh'?'':'<br>'+(checked?tl('replay'):tl('listenFirst'))}</div></div>`;
-  html+=`<div class="words${s.t.length>=10?' compact':''}">`;
+  html+=`<div class="words${s.t.length>=10&&!wideMQ.matches?' compact':''}">`;
   let pos=0;
   s.w.forEach(n=>{
     html+='<div class="word">';
@@ -414,6 +433,7 @@ function render(scroll){
   document.documentElement.lang=Settings.script==='simp'?'zh-Hans':'zh-Hant';
   if(scroll) top();
 }
+wideMQ.addEventListener&&wideMQ.addEventListener('change',()=>render(false));
 render();
 })();
 </script>
