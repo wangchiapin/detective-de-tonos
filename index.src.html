@@ -55,6 +55,15 @@ h1 small{display:block;font-size:13px;font-weight:400;color:#8a857b;letter-spaci
 .score{font-size:15px;margin-bottom:6px}
 .big{font-size:34px;font-weight:600;margin:6px 0}
 .hint{font-size:12px;color:#8a857b;margin-top:6px}
+.nm{width:100%;border:1px solid #cfc9bd;border-radius:6px;padding:9px 10px;font:inherit;background:#fff}
+.nm.bad{border-color:#a8453a;animation:sh .3s}
+@keyframes sh{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.lbrow{display:flex;gap:10px;align-items:baseline;padding:7px 2px;border-bottom:1px solid #eee9de}
+.lbrow .r{width:22px;color:#8a857b;text-align:right}
+.lbrow .n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lbrow .s{font-weight:600}
+.lbrow.me{background:#f6f4ef}
+.lbmsg{font-size:13px;color:#6f6a60;min-height:20px;margin-top:6px}
 </style>
 </head>
 <body>
@@ -106,6 +115,22 @@ const TXT={
   perfect:{zh:['全對的句子','全对的句子'],es:'Frases perfectas',en:'Perfect sentences'},
   result:{zh:['結果','结果'],es:'Resultado',en:'Result'},
   fillAll:{zh:['每個音節都選好聲調才能檢查','每个音节都选好声调才能检查'],es:'Elige el tono de todas las sílabas para comprobar',en:'Choose a tone for every syllable to check'},
+  board:{zh:['排行榜','排行榜'],es:'Ranking',en:'Leaderboard'},
+  nameLab:{zh:['暱稱（只有選「全部」才會上排行榜）','昵称（只有选“全部”才会上排行榜）'],es:'Apodo (solo con «Todos» entras al ranking)',en:'Nickname (only “All” counts for the leaderboard)'},
+  namePh:{zh:['輸入暱稱','输入昵称'],es:'Escribe tu apodo',en:'Enter a nickname'},
+  needName:{zh:['選「全部」要先輸入暱稱才能開始','选“全部”要先输入昵称才能开始'],es:'Con «Todos» hay que escribir un apodo para empezar',en:'Enter a nickname to start with “All”'},
+  sending:{zh:['上傳中…','上传中…'],es:'Enviando…',en:'Sending…'},
+  submitted:{zh:['✓ 已上傳到排行榜','✓ 已上传到排行榜'],es:'✓ Subido al ranking',en:'✓ Submitted to the leaderboard'},
+  kept:{zh:['沒有超過你的最高分，排行榜維持原樣','没有超过你的最高分，排行榜维持原样'],es:'No superas tu mejor marca; el ranking no cambia',en:'Not above your best; the leaderboard is unchanged'},
+  submitFail:{zh:['上傳失敗，請檢查網路後再玩一次','上传失败，请检查网络后再玩一次'],es:'No se pudo enviar. Revisa la conexión y vuelve a jugar',en:'Could not submit. Check your connection and play again'},
+  notRanked:{zh:['這局不上排行榜（只有選「全部」才會上榜）','这局不上排行榜（只有选“全部”才会上榜）'],es:'Esta partida no cuenta para el ranking (solo con «Todos»)',en:'This round is not ranked (only “All” counts)'},
+  boardEmpty:{zh:['還沒有人上榜','还没有人上榜'],es:'Aún no hay nadie en el ranking',en:'No one is on the board yet'},
+  boardFail:{zh:['排行榜讀取失敗','排行榜读取失败'],es:'No se pudo cargar el ranking',en:'Could not load the leaderboard'},
+  loading:{zh:['讀取中…','读取中…'],es:'Cargando…',en:'Loading…'},
+  you:{zh:['（你）','（你）'],es:'(tú)',en:'(you)'},
+  boardNote:{zh:['分數是答對率；只有選「全部」玩的 10 題會上榜，每台裝置只留最高分。','分数是答对率；只有选“全部”玩的 10 题会上榜，每台装置只留最高分。'],es:'La puntuación es el porcentaje de aciertos; solo cuentan las partidas de 10 frases con «Todos», y se guarda tu mejor marca.',en:'The score is your accuracy; only 10-sentence rounds with “All” count, and your best is kept.'},
+  back:{zh:['返回','返回'],es:'Volver',en:'Back'},
+  accuracy:{zh:['答對率','答对率'],es:'Aciertos',en:'Accuracy'},
   listenFirst:{zh:['按喇叭聽句子；檢查後才會顯示漢字','按喇叭听句子；检查后才会显示汉字'],es:'Pulsa el altavoz para oír la frase; los caracteres aparecen al comprobar',en:'Tap the speaker to hear the sentence; characters appear after checking'}
 };
 function tx(k){ const t=TXT[k]; const simp=Settings.script==='simp'; let z=t.zh[simp?1:0]; if(Settings.lang==='zh'||!(t.es||t.en)) return z; const o=Settings.lang==='en'?t.en:t.es; return z+(o?' · '+o:''); }
@@ -140,9 +165,48 @@ function speak(text){
   }catch(e){}
 }
 
+/* ===== 排行榜（memorma-24dab；tone_boards/{read|listen}/entries/{uid}；文件 id＝匿名 uid；前 10 名）=====
+   只有選「全部」玩完一局才上榜；分數＝答對率×1000（整數，例如 97.3% 存 973）；每台裝置每個榜只留最高分 */
+const LB_CFG={apiKey:'AIzaSyC_YSDn2OH6_GKKwCq0d8QFNl3fYXzTC60',authDomain:'memorma-24dab.firebaseapp.com',projectId:'memorma-24dab',appId:'1:806709458465:web:f0d12acb2f911f2f165560'};
+let fbP=null;
+function fbInit(){
+  if(fbP) return fbP;
+  const CDN='https://www.gstatic.com/firebasejs/10.12.2/';
+  fbP=(async()=>{
+    const A=await import(CDN+'firebase-app.js'),Au=await import(CDN+'firebase-auth.js'),F=await import(CDN+'firebase-firestore.js');
+    const app=A.initializeApp(LB_CFG,'tonlb'), auth=Au.getAuth(app);
+    let user=auth.currentUser;
+    if(!user){ const c=await Au.signInAnonymously(auth); user=(c&&c.user)||auth.currentUser; }
+    return {F,db:F.getFirestore(app),uid:user.uid};
+  })().catch(()=>{ fbP=null; return null; });
+  return fbP;
+}
+const NAME_KEY='detectiveTonos.name'; let memName='';
+function getName(){ let v=''; try{ v=localStorage.getItem(NAME_KEY)||''; }catch(e){} return String(v||memName||'').trim().slice(0,14); }
+function setName(n){ memName=n; try{ localStorage.setItem(NAME_KEY,n); }catch(e){} }
+const topCache={};
+async function submitScore(mode,name,score){
+  const L=await fbInit(); if(!L) throw new Error('no firebase');
+  const ref=L.F.doc(L.db,'tone_boards',mode,'entries',L.uid);
+  const snap=await L.F.getDoc(ref);
+  if(snap.exists()){ const old=snap.data(); if(old.score>=score){ if(old.name===name) return 'kept'; score=old.score; } }   // 不比舊的高：分數維持，只更新暱稱
+  await L.F.setDoc(ref,{name,score,updatedAt:L.F.serverTimestamp()});
+  topCache[mode]=null; return 'saved';
+}
+async function fetchTop(mode){
+  const c=topCache[mode]; if(c&&Date.now()-c.t<60000) return c.v;   // 60 秒暫存，反覆開關不重複讀取
+  const L=await fbInit(); if(!L) throw new Error('no firebase');
+  const q=L.F.query(L.F.collection(L.db,'tone_boards',mode,'entries'),L.F.orderBy('score','desc'),L.F.limit(10));
+  const snap=await L.F.getDocs(q);
+  const rows=snap.docs.map(d=>Object.assign({id:d.id},d.data())).sort((a,b)=>b.score-a.score).slice(0,10);
+  const v={rows,uid:L.uid}; topCache[mode]={t:Date.now(),v}; return v;
+}
+const pct=s=>(s/10).toFixed(1)+'%';
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
 /* ===== 遊戲狀態 ===== */
 const app=document.getElementById('app');
-let screen='home', qs=[], qi=0, ans=[], checked=false, tot={syl:0,good:0,perfect:0};
+let boardMode='read', screen='home', qs=[], qi=0, ans=[], checked=false, tot={syl:0,good:0,perfect:0};
 function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 function sentText(s){ return (Settings.script==='simp'?s.s:s.t).join(''); }
 function top(){ window.scrollTo(0,0); }
@@ -170,18 +234,26 @@ function renderHome(){
     </div>
     <div class="row" style="margin-bottom:10px"><span class="sub">${tx('level')}</span><span class="seg" id="sgLv">${lvs.map(l=>`<button data-v="${l}" class="${G.level===l?'on':''}">${l==='all'?tz('all'):l}</button>`).join('')}</span></div>
     <div class="row" style="margin-bottom:14px"><span class="sub">${tx('speed')}</span><span class="seg" id="sgRate">${['slow','normal','fast'].map(r=>`<button data-v="${r}" class="${Settings.rate===r?'on':''}">${tz(r)}</button>`).join('')}</span></div>
-    <button class="btn" id="bStart">${tz('start')}</button>${Settings.lang==='zh'?'':`<div class="sub" style="margin-top:4px">${tl('start')}</div>`}
+    <div style="margin-bottom:14px"><div class="sub" style="margin-bottom:4px">${tz('nameLab')}${Settings.lang==='zh'?'':'<br>'+tl('nameLab')}</div><input class="nm" id="nm" maxlength="14" placeholder="${esc(tz('namePh'))}" value="${esc(getName())}"><div class="sub" id="nmHint" style="color:#a8453a;min-height:18px"></div></div>
+    <div class="row"><button class="btn" id="bStart">${tz('start')}</button><button class="btn ghost" id="bBoard">🏆 ${tz('board')}</button></div>${Settings.lang==='zh'?'':`<div class="sub" style="margin-top:4px">${tl('start')}</div>`}
   </div>`;
   bindHeader();
   document.querySelectorAll('#chMode button').forEach(b=>b.onclick=()=>{ G.mode=b.dataset.v; writeG(); render(true); });
   document.querySelectorAll('#sgLv button').forEach(b=>b.onclick=()=>{ G.level=b.dataset.v; writeG(); render(true); });
   document.querySelectorAll('#sgRate button').forEach(b=>b.onclick=()=>{ Settings.rate=b.dataset.v; writeSettings(Settings); render(true); });
+  document.getElementById('nm').addEventListener('input',e=>setName(e.target.value.trim().slice(0,14)));
   document.getElementById('bStart').onclick=startGame;
+  document.getElementById('bBoard').onclick=()=>{ boardMode=G.mode; screen='board'; render(true); };
 }
 
 function startGame(){
+  if(screen==='home'&&G.level==='all'){
+    const el=document.getElementById('nm'), nm=el?el.value.trim().slice(0,14):getName();
+    if(!nm){ const h=document.getElementById('nmHint'); if(h) h.textContent=tz('needName'); if(el){ el.classList.remove('bad'); void el.offsetWidth; el.classList.add('bad'); el.focus(); } return; }
+    setName(nm);
+  }
   const pool=SENTENCES.filter(s=>G.level==='all'||s.lv===G.level);
-  qs=shuffle(pool).slice(0,10); qi=0; tot={syl:0,good:0,perfect:0}; screen='play';
+  qs=shuffle(pool).slice(0,10); qi=0; tot={syl:0,good:0,perfect:0}; screen='play'; resultSent=false;
   try{ HGPlays.start(G.mode+'_'+G.level); }catch(e){}
   newQ();
 }
@@ -238,14 +310,37 @@ function doCheck(){
   renderPlay();
 }
 function renderResult(){
-  app.innerHTML=header()+`<div class="card"><div class="sub">${tz('result')}</div><div class="big">${tot.good} / ${tot.syl}</div><div class="score">${tz('goodSyl')}</div><div class="score">${tz('perfect')}：${tot.perfect} / ${qs.length}</div>
-  <div class="row" style="margin-top:12px"><button class="btn" id="bAgain">${tz('again')}</button><button class="btn ghost" id="bHome">${tz('home')}</button></div></div>`;
+  const ranked=G.level==='all'&&tot.syl>0, score=tot.syl?Math.round(tot.good/tot.syl*1000):0;
+  app.innerHTML=header()+`<div class="card"><div class="sub">${tz('result')}</div><div class="big">${tot.good} / ${tot.syl}</div><div class="score">${tz('goodSyl')}　${tz('accuracy')} ${pct(score)}</div><div class="score">${tz('perfect')}：${tot.perfect} / ${qs.length}</div>
+  <div class="lbmsg" id="lbMsg">${ranked?tz('sending'):tz('notRanked')}${!ranked&&Settings.lang!=='zh'?'<br>'+tl('notRanked'):''}</div>
+  <div class="row" style="margin-top:12px"><button class="btn" id="bAgain">${tz('again')}</button><button class="btn ghost" id="bBoard">🏆 ${tz('board')}</button><button class="btn ghost" id="bHome">${tz('home')}</button></div></div>`;
   bindHeader();
   document.getElementById('bAgain').onclick=startGame;
+  document.getElementById('bBoard').onclick=()=>{ boardMode=G.mode; screen='board'; render(true); };
   document.getElementById('bHome').onclick=()=>{ screen='home'; render(true); };
+  if(ranked&&!resultSent){
+    resultSent=true; resultMsgKey='sending';
+    const msg=k=>{ resultMsgKey=k; const el=document.getElementById('lbMsg'); if(el) el.textContent=tz(k); };
+    submitScore(G.mode,getName(),score).then(r=>msg(r==='kept'?'kept':'submitted')).catch(()=>msg('submitFail'));
+  } else if(ranked&&resultSent){ const el=document.getElementById('lbMsg'); if(el) el.textContent=tz(resultMsgKey); }
 }
+function renderBoard(){
+  app.innerHTML=header()+`<div class="card"><div class="row" style="margin-bottom:8px"><b style="font-size:17px">🏆 ${tz('board')}</b><span class="seg" id="sgBoard"><button data-v="read" class="${boardMode==='read'?'on':''}">${tz('modeRead')}</button><button data-v="listen" class="${boardMode==='listen'?'on':''}">${tz('modeListen')}</button></span></div>
+  <div id="lbBody"><p class="sub">${tz('loading')}</p></div><div class="hint">${tz('boardNote')}${Settings.lang==='zh'?'':'<br>'+tl('boardNote')}</div>
+  <div class="row" style="margin-top:12px"><button class="btn ghost" id="bBack">${tz('back')}</button></div></div>`;
+  bindHeader();
+  document.querySelectorAll('#sgBoard button').forEach(b=>b.onclick=()=>{ boardMode=b.dataset.v; renderBoard(); });
+  document.getElementById('bBack').onclick=()=>{ screen=prevScreen; render(true); };
+  const mine=boardMode;
+  fetchTop(mine).then(({rows,uid})=>{
+    const el=document.getElementById('lbBody'); if(!el||mine!==boardMode) return;
+    el.innerHTML=rows.length?rows.map((r,i)=>`<div class="lbrow${r.id===uid?' me':''}"><span class="r">${i+1}</span><span class="n">${esc(r.name||'')}${r.id===uid?' '+esc(tz('you')):''}</span><span class="s">${pct(r.score|0)}</span></div>`).join(''):`<p class="sub">${tz('boardEmpty')}</p>`;
+  }).catch(()=>{ const el=document.getElementById('lbBody'); if(el&&mine===boardMode) el.innerHTML=`<p class="sub">${tz('boardFail')}</p>`; });
+}
+let prevScreen='home', resultSent=false, resultMsgKey='submitted';
 function render(scroll){
-  if(screen==='home') renderHome(); else if(screen==='play') renderPlay(); else renderResult();
+  if(screen!=='board') prevScreen=screen;
+  if(screen==='home') renderHome(); else if(screen==='play') renderPlay(); else if(screen==='board') renderBoard(); else renderResult();
   document.documentElement.lang=Settings.script==='simp'?'zh-Hans':'zh-Hant';
   if(scroll) top();
 }

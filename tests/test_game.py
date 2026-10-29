@@ -28,8 +28,12 @@ with sync_playwright() as p:
     ok('聲調偵探' in page.inner_text('h1'), '標題')
     ok('本調' in page.inner_text('.note'), '首頁有「以本調為主」註記')
 
-    # --- 看句子模式：全答對 ---
+    # --- 選「全部」沒填暱稱不能開始 ---
     page.click('#chMode button[data-v=read]'); page.click('#bStart')
+    ok(page.query_selector('.words') is None and '暱稱' in page.inner_text('#nmHint'), '選「全部」沒暱稱不能開始，並提示')
+    page.fill('#nm', '小測')
+    # --- 看句子模式：全答對 ---
+    page.click('#bStart')
     seen_py = []
     for q in range(10):
         qtext = page.inner_text('.words')
