@@ -7,63 +7,108 @@
 <style>
 html{color-scheme:light}
 *{box-sizing:border-box}
-body{margin:0;background:#f6f4ef;color:#2b2b2b;font:16px/1.5 system-ui,-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;-webkit-text-size-adjust:100%}
+body{margin:0;background:#dccdae;background-image:repeating-linear-gradient(0deg,rgba(120,98,60,.07) 0 1px,transparent 1px 4px);color:#2b2b2b;font:16px/1.5 system-ui,-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;-webkit-text-size-adjust:100%}
 #app{max-width:640px;margin:0 auto;padding:16px 14px 8px}
 h1{margin:4px 0 2px;font-size:22px;font-weight:600;letter-spacing:.04em}
-h1 small{display:block;font-size:13px;font-weight:400;color:#8a857b;letter-spacing:0}
-.bar{display:flex;flex-wrap:wrap;gap:6px 10px;margin:12px 0 8px;font-size:13px;color:#6f6a60}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.help{flex:none;margin-top:6px;border:1px solid #b8a67f;background:#fffdf6;border-radius:4px;padding:5px 10px;font:inherit;font-size:13px;color:#5c5139;cursor:pointer;white-space:nowrap}
+.help.on{background:#2b2b2b;color:#fff;border-color:#2b2b2b}
+h1 svg{width:22px;height:22px;vertical-align:-3px;margin-right:6px}
+h1 small{display:block;font-size:13px;font-weight:400;color:#6b5f48;letter-spacing:0}
+.bar{display:flex;flex-wrap:wrap;gap:6px 10px;margin:12px 0 8px;font-size:13px;color:#5c5139}
 .bar .grp{display:flex;align-items:center;gap:4px}
-.seg{display:inline-flex;border:1px solid #cfc9bd;border-radius:6px;overflow:hidden;background:#fff}
-.seg button{border:0;background:transparent;padding:4px 9px;font:inherit;color:#6f6a60;cursor:pointer}
-.seg button+button{border-left:1px solid #e3ded3}
+.seg{display:inline-flex;border:1px solid #b8a67f;border-radius:4px;overflow:hidden;background:#fffdf6}
+.seg button{border:0;background:transparent;padding:4px 9px;font:inherit;color:#5c5139;cursor:pointer}
+.seg button+button{border-left:1px solid #e0d4b6}
 .seg button.on{background:#2b2b2b;color:#fff}
-.note{font-size:13px;color:#6f6a60;background:#fff;border:1px solid #e3ded3;border-radius:6px;padding:8px 10px;margin:8px 0 12px}
-.note small{display:block;color:#8a857b;margin-top:2px}
-.card{background:#fff;border:1px solid #e3ded3;border-radius:8px;padding:14px 12px;margin-bottom:12px}
-.btn{border:1px solid #2b2b2b;background:#2b2b2b;color:#fff;border-radius:6px;padding:10px 18px;font:inherit;cursor:pointer}
-.btn.ghost{background:#fff;color:#2b2b2b}
+.note{font-size:13px;color:#5c5139;background:#f1e6c8;border:1px dashed #b8a67f;border-radius:4px;padding:8px 10px;margin:8px 0 12px}
+.note small{display:block;color:#7a6e55;margin-top:2px}
+.card{position:relative;background:#fffdf6;border:1px solid #c9b88f;border-radius:3px;padding:20px 12px 14px;margin:16px 0 12px;box-shadow:0 1px 0 #c9b88f,0 3px 8px rgba(90,70,30,.15)}
+.card::before{content:"";position:absolute;top:-9px;left:50%;width:64px;height:18px;margin-left:-32px;background:rgba(244,232,196,.88);border:1px solid rgba(160,140,95,.5);transform:rotate(-2deg)}
+.tag{position:relative;display:inline-block;margin-left:12px;padding:2px 10px 2px 22px;background:#f1e6c8;border:1px solid #b8a67f;border-radius:3px 8px 8px 3px;font-size:13px;color:#5c5139}
+.tag::before{content:"";position:absolute;left:7px;top:50%;width:6px;height:6px;margin-top:-4px;border-radius:50%;border:1.5px solid #b8a67f;background:#fffdf6}
+.tag::after{content:"";position:absolute;left:-12px;top:50%;width:21px;border-top:2px solid rgba(168,69,58,.75)}
+.prog{align-items:center}
+.steps{display:flex;align-items:center;gap:3px}
+.steps .ft{display:block;width:9px;height:15px;opacity:.2;transform:translateY(-2px) rotate(-10deg)}
+.steps .ft.r{transform:translateY(2px) rotate(10deg)}
+.steps .ft svg{display:block;width:100%;height:100%;fill:#2b2b2b}
+.steps .ft.past{opacity:.85}
+.steps .ft.now{opacity:1}
+.steps .ft.now svg{fill:#a8453a}
+.card.vprint{background:#fffdf6 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 130 60' fill='none' stroke='%235c5139' stroke-opacity='.13' stroke-width='3.4' stroke-linecap='round'%3E%3Cline x1='5' y1='27.0' x2='5' y2='33.0'/%3E%3Cline x1='11' y1='24.0' x2='11' y2='36.0'/%3E%3Cline x1='17' y1='19.0' x2='17' y2='41.0'/%3E%3Cline x1='23' y1='23.0' x2='23' y2='37.0'/%3E%3Cline x1='29' y1='15.0' x2='29' y2='45.0'/%3E%3Cline x1='35' y1='10.0' x2='35' y2='50.0'/%3E%3Cline x1='41' y1='17.0' x2='41' y2='43.0'/%3E%3Cline x1='47' y1='8.0' x2='47' y2='52.0'/%3E%3Cline x1='53' y1='13.0' x2='53' y2='47.0'/%3E%3Cline x1='59' y1='21.0' x2='59' y2='39.0'/%3E%3Cline x1='65' y1='16.0' x2='65' y2='44.0'/%3E%3Cline x1='71' y1='7.0' x2='71' y2='53.0'/%3E%3Cline x1='77' y1='14.0' x2='77' y2='46.0'/%3E%3Cline x1='83' y1='20.0' x2='83' y2='40.0'/%3E%3Cline x1='89' y1='12.0' x2='89' y2='48.0'/%3E%3Cline x1='95' y1='18.0' x2='95' y2='42.0'/%3E%3Cline x1='101' y1='24.0' x2='101' y2='36.0'/%3E%3Cline x1='107' y1='21.0' x2='107' y2='39.0'/%3E%3Cline x1='113' y1='26.0' x2='113' y2='34.0'/%3E%3Cline x1='119' y1='23.0' x2='119' y2='37.0'/%3E%3Cline x1='125' y1='27.0' x2='125' y2='33.0'/%3E%3C/svg%3E") no-repeat right 8px bottom 8px/140px}
+.card.vprint.vtop{background-position:right 10px top 14px}
+.trace{height:16px;margin:8px 0 0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 16' fill='none' stroke='%235c5139' stroke-opacity='.38' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M0 6H8L12 4H18L22 13L38 4L42 6L48 13L60 5L64 3L80 13L90 6H96'/%3E%3Cpath d='M0 15.5H96' stroke-opacity='.15' stroke-dasharray='2 3'/%3E%3C/svg%3E") repeat-x left center/96px 16px}
+.rk svg{width:22px;height:22px;vertical-align:-5px;margin-right:4px}
+.rk svg.f{width:12px;height:20px;margin-right:2px}
+h1 svg.hat{width:28px;margin:0 0 0 6px;vertical-align:-4px}
+.btn svg{width:16px;height:16px;vertical-align:-3px;margin-right:5px}
+.btn{border:1px solid #2b2b2b;background:#2b2b2b;color:#fff;border-radius:4px;padding:10px 18px;font:inherit;cursor:pointer}
+.btn.ghost{background:#fffdf6;color:#2b2b2b}
 .btn[disabled]{opacity:.35;cursor:default}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.sub{color:#8a857b;font-size:13px}
+.sub{color:#7a6e55;font-size:13px}
 .choose{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 14px}
-.choose button{border:1px solid #cfc9bd;background:#fff;border-radius:8px;padding:14px 8px;font:inherit;cursor:pointer;text-align:center}
-.choose button.on{border-color:#2b2b2b;box-shadow:inset 0 0 0 1px #2b2b2b}
+.choose button{border:1px solid #b8a67f;background:#fffdf6;border-radius:4px;padding:14px 8px;font:inherit;cursor:pointer;text-align:center}
+.choose button.on{border-color:#2b2b2b;box-shadow:inset 0 0 0 1px #2b2b2b;background:#f6efdc}
 .choose b{display:block;font-size:17px;font-weight:600}
-.choose span{display:block;font-size:12px;color:#8a857b;margin-top:2px}
-.prog{display:flex;justify-content:space-between;font-size:13px;color:#8a857b;margin-bottom:8px}
-.listen{display:flex;align-items:center;gap:10px;margin:2px 0 10px}
-.spk{width:52px;height:52px;border-radius:50%;border:1px solid #2b2b2b;background:#fff;font-size:22px;cursor:pointer}
-.words{display:flex;flex-wrap:wrap;gap:10px 14px;margin:6px 0 4px}
-.word{display:flex;gap:4px}
-.syl{width:46px;text-align:center}
+.choose span{display:block;font-size:12px;color:#7a6e55;margin-top:2px}
+.prog{display:flex;justify-content:space-between;font-size:13px;color:#7a6e55;margin-bottom:8px}
+.listen{display:flex;align-items:center;gap:10px;margin:2px 0 12px;padding:10px;border:1px dashed #b8a67f;border-radius:4px;background:#f6efdc}
+.reels{display:flex;gap:6px;flex:none}
+.reels i{display:block;width:26px;height:26px;border-radius:50%;border:3px solid #2b2b2b;background:radial-gradient(circle,#2b2b2b 0 3px,transparent 3.5px),conic-gradient(#f6efdc 0 25%,#2b2b2b 0 33%,#f6efdc 0 58%,#2b2b2b 0 66%,#f6efdc 0 91%,#2b2b2b 0)}
+.listen.rec .reels i{animation:spin 1.2s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.rank{font-weight:600;margin:2px 0 6px;color:#5c5139}
+.spk{flex:none;width:60px;height:60px;border-radius:50%;border:0;background:#2b2b2b;color:#f6efdc;font-size:24px;cursor:pointer;box-shadow:0 0 0 4px rgba(43,43,43,.12),0 0 0 8px rgba(43,43,43,.06)}
+.words{display:flex;flex-wrap:wrap;gap:16px 12px;margin:12px 0 4px}
+.word{position:relative;display:flex;gap:4px}
+.word::after{content:"";position:absolute;left:24px;right:24px;top:0;border-top:2px solid rgba(168,69,58,.75);z-index:1}
+.syl{position:relative;min-width:48px;text-align:center;background:#fffdf6;border:1px solid #d6c89f;border-radius:4px;padding:6px 4px 4px;box-shadow:0 1px 0 #d6c89f}
+.syl::before{content:"";position:absolute;top:-5px;left:50%;margin-left:-5px;width:10px;height:10px;border-radius:50%;background:#a8453a;border:1px solid #7d2f27;z-index:2}
+.words.compact{gap:14px 8px}
+.words.compact .word{gap:3px}
+.words.compact .word::after{left:21px;right:21px}
+.words.compact .syl{min-width:42px;padding:6px 2px 3px}
+.words.compact .hz{font-size:20px;min-height:24px}
+.words.compact .py{font-size:13px;min-height:20px}
+.words.compact .tones{display:grid;grid-template-columns:1fr 1fr;gap:3px;padding:0 1px}
+.words.compact .tones button{height:26px;gap:0}
+.words.compact .tones button svg{width:15px}
+.words.compact .tones button small{display:none}
+.words.compact .tones button.on::after{top:2px;right:2px;width:4px;height:4px}
 .hz{font-size:24px;line-height:1.2;min-height:29px}
 .py{font-size:15px;min-height:23px;font-weight:600;letter-spacing:.01em}
 .py.done{color:#2b2b2b}
-.tones{display:flex;flex-direction:column;gap:3px;margin-top:3px}
-.tones button{border:1px solid #cfc9bd;background:#fff;border-radius:5px;height:30px;padding:0;font:inherit;font-size:15px;cursor:pointer;color:#2b2b2b;line-height:1}
-.tones button small{font-size:10px;color:#8a857b;margin-left:3px}
+.tones{display:flex;flex-direction:column;gap:3px;margin-top:3px;padding:0 2px}
+.tones button{position:relative;display:flex;align-items:center;justify-content:center;gap:3px;border:1px solid #b8a67f;background:#fffdf6;border-radius:4px;height:30px;padding:0;font:inherit;font-size:15px;cursor:pointer;color:#2b2b2b;line-height:1}
+.tones button svg{width:18px;height:12px;display:block}
+.tones button small{font-size:10px;color:#7a6e55}
 .tones button.on{background:#2b2b2b;color:#fff;border-color:#2b2b2b}
-.tones button.on small{color:#cfc9bd}
+.tones button.on small{color:#d8cdb0}
+.tones button.on::after{content:"";position:absolute;top:3px;right:3px;width:5px;height:5px;border-radius:50%;background:#e8dcb8}
 .tones button[disabled]{cursor:default}
-.neu{font-size:12px;color:#8a857b;border:1px dashed #cfc9bd;border-radius:5px;padding:4px 0;margin-top:3px}
-.syl.ok .py{color:#3d6b4f}
-.syl.bad .py{color:#a8453a;text-decoration:line-through}
-.fix{font-size:15px;font-weight:600;color:#3d6b4f;min-height:20px}
-.res{margin-top:12px;padding-top:10px;border-top:1px solid #eee9de}
+.neu{font-size:12px;color:#7a6e55;border:1px dashed #b8a67f;border-radius:4px;padding:4px 0;margin:3px 2px 0}
+.syl.ok{border-color:#3d6b4f;box-shadow:0 1px 0 #3d6b4f}
+.syl.ok .py{color:#3d6b4f;display:inline-block;border:2px solid #3d6b4f;border-radius:999px;padding:0 6px;min-height:0;line-height:1.3;margin:1px 0}
+.syl.bad{border-color:#a8453a;box-shadow:0 1px 0 #a8453a}
+.syl.bad .py{color:#a8453a;text-decoration:line-through;text-decoration-thickness:2px}
+.fix{font-family:"Bradley Hand","Segoe Print","Noteworthy","Comic Sans MS",cursive;font-size:16px;font-weight:700;color:#3d6b4f;min-height:20px}
+.res{margin-top:12px;padding-top:10px;border-top:1px dashed #c9b88f}
 .res .line{font-size:15px}
-.res .tr{color:#8a857b;font-size:14px;margin-top:2px}
+.res .tr{color:#7a6e55;font-size:14px;margin-top:2px}
 .score{font-size:15px;margin-bottom:6px}
 .big{font-size:34px;font-weight:600;margin:6px 0}
-.hint{font-size:12px;color:#8a857b;margin-top:6px}
-.nm{width:100%;border:1px solid #cfc9bd;border-radius:6px;padding:9px 10px;font:inherit;background:#fff}
+.hint{font-size:12px;color:#7a6e55;margin-top:6px}
+.nm{width:100%;border:1px solid #b8a67f;border-radius:4px;padding:9px 10px;font:inherit;background:#fffdf6}
 .nm.bad{border-color:#a8453a;animation:sh .3s}
 @keyframes sh{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
-.lbrow{display:flex;gap:10px;align-items:baseline;padding:7px 2px;border-bottom:1px solid #eee9de}
-.lbrow .r{width:22px;color:#8a857b;text-align:right}
+.lbrow{display:flex;gap:10px;align-items:baseline;padding:7px 2px;border-bottom:1px solid #e6dcc0}
+.lbrow .r{width:22px;color:#7a6e55;text-align:right}
 .lbrow .n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lbrow .s{font-weight:600}
-.lbrow.me{background:#f6f4ef}
-.lbmsg{font-size:13px;color:#6f6a60;min-height:20px;margin-top:6px}
+.lbrow.me{background:#f3ead2}
+.lbmsg{font-size:13px;color:#5c5139;min-height:20px;margin-top:6px}
 </style>
 <meta name="description" content="看拼音填聲調，看句子、聽句子都能玩 · Pon los tonos al pinyin: lee o escucha la frase">
 <meta property="og:type" content="website">
@@ -127,6 +172,11 @@ const TXT={
     es:'La voz del dispositivo cambia los tonos sola; si suena distinto al tono original, es normal.',
     en:'The device voice changes tones by itself; it is normal if it sounds different from the original tone.'},
   modeRead:{zh:['看句子','看句子'],es:'Leer la frase',en:'Read the sentence'},
+  help:{zh:['說明','说明'],es:'Ayuda',en:'Help'},
+  case:{zh:['案件','案件'],es:'Caso',en:'Case'},
+  rankA:{zh:['名偵探','名侦探'],es:'Detective maestro',en:'Master detective'},
+  rankB:{zh:['警探','警探'],es:'Inspector',en:'Inspector'},
+  rankC:{zh:['實習偵探','实习侦探'],es:'Detective novato',en:'Rookie detective'},
   modeReadD:{zh:['看漢字和拼音，填聲調','看汉字和拼音，填声调'],es:'Mira los caracteres y el pinyin, pon los tonos',en:'See characters and pinyin, fill in tones'},
   modeListen:{zh:['聽句子','听句子'],es:'Escuchar la frase',en:'Listen to the sentence'},
   modeListenD:{zh:['聽句子和拼音，填聲調','听句子和拼音，填声调'],es:'Escucha la frase, mira el pinyin, pon los tonos',en:'Hear the sentence, see pinyin, fill in tones'},
@@ -135,7 +185,7 @@ const TXT={
   speed:{zh:['語速','语速'],es:'Velocidad',en:'Speed'},
   slow:{zh:['慢','慢'],es:'Lenta',en:'Slow'},normal:{zh:['中','中'],es:'Normal',en:'Normal'},fast:{zh:['快','快'],es:'Rápida',en:'Fast'},
   start:{zh:['開始（10 題）','开始（10 题）'],es:'Empezar (10 frases)',en:'Start (10 sentences)'},
-  check:{zh:['檢查','检查'],es:'Comprobar',en:'Check'},
+  check:{zh:['破案','破案'],es:'Resolver',en:'Solve'},
   next:{zh:['下一題','下一题'],es:'Siguiente',en:'Next'},
   finish:{zh:['看結果','看结果'],es:'Ver resultado',en:'See result'},
   again:{zh:['再玩一次','再玩一次'],es:'Jugar otra vez',en:'Play again'},
@@ -145,10 +195,10 @@ const TXT={
   q:{zh:['第','第'],es:'Frase',en:'Sentence'},
   goodSyl:{zh:['音節答對','音节答对'],es:'Sílabas correctas',en:'Syllables correct'},
   perfect:{zh:['全對的句子','全对的句子'],es:'Frases perfectas',en:'Perfect sentences'},
-  result:{zh:['結果','结果'],es:'Resultado',en:'Result'},
-  fillAll:{zh:['每個音節都選好聲調才能檢查','每个音节都选好声调才能检查'],es:'Elige el tono de todas las sílabas para comprobar',en:'Choose a tone for every syllable to check'},
+  result:{zh:['破案結果','破案结果'],es:'Caso resuelto',en:'Case solved'},
+  fillAll:{zh:['選完聲調才能破案','选完声调才能破案'],es:'Elige todos los tonos',en:'Pick all the tones'},
   board:{zh:['排行榜','排行榜'],es:'Ranking',en:'Leaderboard'},
-  nameLab:{zh:['暱稱（只有選「全部」才會上排行榜）','昵称（只有选“全部”才会上排行榜）'],es:'Apodo (solo con «Todos» entras al ranking)',en:'Nickname (only “All” counts for the leaderboard)'},
+  nameLab:{zh:['暱稱（選「全部」才上排行榜）','昵称（选“全部”才上排行榜）'],es:'Apodo (ranking: solo «Todos»)',en:'Nickname (ranking: “All” only)'},
   namePh:{zh:['輸入暱稱','输入昵称'],es:'Escribe tu apodo',en:'Enter a nickname'},
   needName:{zh:['選「全部」要先輸入暱稱才能開始','选“全部”要先输入昵称才能开始'],es:'Con «Todos» hay que escribir un apodo para empezar',en:'Enter a nickname to start with “All”'},
   sending:{zh:['上傳中…','上传中…'],es:'Enviando…',en:'Sending…'},
@@ -163,7 +213,7 @@ const TXT={
   boardNote:{zh:['分數是答對率；只有選「全部」玩的 10 題會上榜，每台裝置只留最高分。','分数是答对率；只有选“全部”玩的 10 题会上榜，每台装置只留最高分。'],es:'La puntuación es el porcentaje de aciertos; solo cuentan las partidas de 10 frases con «Todos», y se guarda tu mejor marca.',en:'The score is your accuracy; only 10-sentence rounds with “All” count, and your best is kept.'},
   back:{zh:['返回','返回'],es:'Volver',en:'Back'},
   accuracy:{zh:['答對率','答对率'],es:'Aciertos',en:'Accuracy'},
-  listenFirst:{zh:['按喇叭聽句子；檢查後才會顯示漢字','按喇叭听句子；检查后才会显示汉字'],es:'Pulsa el altavoz para oír la frase; los caracteres aparecen al comprobar',en:'Tap the speaker to hear the sentence; characters appear after checking'}
+  listenFirst:{zh:['按喇叭聽句子','按喇叭听句子'],es:'Pulsa para escuchar',en:'Tap to listen'}
 };
 function tx(k){ const t=TXT[k]; const simp=Settings.script==='simp'; let z=t.zh[simp?1:0]; if(Settings.lang==='zh'||!(t.es||t.en)) return z; const o=Settings.lang==='en'?t.en:t.es; return z+(o?' · '+o:''); }
 function tz(k){ const t=TXT[k]; return t.zh[Settings.script==='simp'?1:0]; }
@@ -180,6 +230,8 @@ function mark(p,t){
   return p.slice(0,idx)+VM[p[idx]][t-1]+p.slice(idx+1);
 }
 const TMARK=['','ˉ','ˊ','ˇ','ˋ'];
+const TPATH=['','2,3 18,3','2,10 18,3','2,4 7,10 18,3','2,2 18,10'];
+function toneSvg(t){ return `<svg viewBox="0 0 20 12" aria-hidden="true"><polyline points="${TPATH[t]}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`; }
 
 /* ===== 語音 ===== */
 function pickVoice(){
@@ -193,7 +245,10 @@ function speak(text){
     const ss=window.speechSynthesis; if(!ss) return; ss.cancel();
     const u=new SpeechSynthesisUtterance(text); u.lang='zh-TW';
     const v=pickVoice(); if(v){ u.voice=v; u.lang=v.lang; }
-    u.rate=RATE_VALUE[Settings.rate]||0.65; ss.speak(u);
+    u.rate=RATE_VALUE[Settings.rate]||0.65;
+    const rec=on=>{ const b=document.querySelector('.listen'); if(b) b.classList.toggle('rec',on); };
+    u.onstart=()=>rec(true); u.onend=u.onerror=()=>rec(false);
+    ss.speak(u);
   }catch(e){}
 }
 
@@ -243,26 +298,32 @@ function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.fl
 function sentText(s){ return (Settings.script==='simp'?s.s:s.t).join(''); }
 function top(){ window.scrollTo(0,0); }
 
+const MAG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="6.5"/><path d="M15 15l6 6"/></svg>';
+const HAT='<svg class="hat" viewBox="0 0 32 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 15C7 9.5 10.5 6.2 16 6.2S25 9.5 25 15"/><path d="M7 15h18"/><path d="M7 15C5 15 3 16 2 18.6c3 1 6 .4 8-1.2M25 15c2 0 4 1 5 3.6-3 1-6 .4-8-1.2"/><path d="M8.2 11.8Q16 13.6 23.8 11.8"/><path d="M16 6.2V4.6M16 4.6C14.4 2.6 12.6 3 13 4.6c.4 1.1 2 .8 3 0zM16 4.6c1.6-2 3.4-1.6 3 0-.4 1.1-2 .8-3 0z"/></svg>';
+const FOOT='<svg class="f" viewBox="0 0 10 17" fill="currentColor" aria-hidden="true"><ellipse cx="5" cy="5.2" rx="3.7" ry="5"/><ellipse cx="5" cy="13.6" rx="2.7" ry="3"/></svg>';
+function steps(i,n){ let s=''; for(let k=0;k<n;k++) s+=`<i class="ft${k<i?' past':k===i?' now':''}${k%2?' r':''}">${FOOT}</i>`; return `<span class="steps" role="img" aria-label="${i+1} / ${n}">${s}</span>`; }
+function rankIcon(score){ return `<span class="rk">${score>=950?HAT:score>=800?FOOT+FOOT:MAG}</span>`; }
+let helpOpen=false;
 function header(){
-  const lv=['all','A1','A2','B1'];
-  return `<h1>${tz('title')}<small>Detective de tonos</small></h1>
+  return `<div class="top"><h1>${MAG}${tz('title')}${HAT}<small>Detective de tonos</small></h1><button class="help${helpOpen?' on':''}" id="bHelp">ℹ ${tz('help')}${Settings.lang==='zh'?'':' · '+tl('help')}</button></div>
   <div class="bar">
     <div class="grp"><span>${tz('scriptName')}</span><span class="seg" id="sgScript"><button data-v="trad" class="${Settings.script==='trad'?'on':''}">繁</button><button data-v="simp" class="${Settings.script==='simp'?'on':''}">简</button></span></div>
     <div class="grp"><span>Idioma</span><span class="seg" id="sgLang"><button data-v="es" class="${Settings.lang==='es'?'on':''}">ES</button><button data-v="en" class="${Settings.lang==='en'?'on':''}">EN</button><button data-v="zh" class="${Settings.lang==='zh'?'on':''}">中文</button></span></div>
   </div>
-  <div class="note">${tz('note')}${Settings.lang==='zh'?'':`<small>${tl('note')}</small>`}${G.mode==='listen'?`<div style="margin-top:6px">${tz('listenNote')}${Settings.lang==='zh'?'':`<small>${tl('listenNote')}</small>`}</div>`:''}</div>`;
+  ${helpOpen?`<div class="note">${tz('note')}${Settings.lang==='zh'?'':`<small>${tl('note')}</small>`}${G.mode==='listen'?`<div style="margin-top:6px">${tz('listenNote')}${Settings.lang==='zh'?'':`<small>${tl('listenNote')}</small>`}</div>`:''}</div>`:''}<div class="trace" aria-hidden="true"></div>`;
 }
 function bindHeader(){
+  const hb=document.getElementById('bHelp'); if(hb) hb.onclick=()=>{ helpOpen=!helpOpen; render(false); };
   document.querySelectorAll('#sgScript button').forEach(b=>b.onclick=()=>{ Settings.script=b.dataset.v; writeSettings(Settings); render(true); });
   document.querySelectorAll('#sgLang button').forEach(b=>b.onclick=()=>{ Settings.lang=b.dataset.v; writeSettings(Settings); render(true); });
 }
 
 function renderHome(){
   const lvs=['all','A1','A2','B1'];
-  app.innerHTML=header()+`<div class="card">
+  app.innerHTML=header()+`<div class="card vprint">
     <div class="choose" id="chMode">
-      <button data-v="read" class="${G.mode==='read'?'on':''}"><b>${tz('modeRead')}</b><span>${tz('modeReadD')}${Settings.lang==='zh'?'':'<br>'+tl('modeReadD')}</span></button>
-      <button data-v="listen" class="${G.mode==='listen'?'on':''}"><b>${tz('modeListen')}</b><span>${tz('modeListenD')}${Settings.lang==='zh'?'':'<br>'+tl('modeListenD')}</span></button>
+      <button data-v="read" class="${G.mode==='read'?'on':''}"><b>${tz('modeRead')}</b>${Settings.lang==='zh'?'':`<span>${tl('modeRead')}</span>`}</button>
+      <button data-v="listen" class="${G.mode==='listen'?'on':''}"><b>${tz('modeListen')}</b>${Settings.lang==='zh'?'':`<span>${tl('modeListen')}</span>`}</button>
     </div>
     <div class="row" style="margin-bottom:10px"><span class="sub">${tx('level')}</span><span class="seg" id="sgLv">${lvs.map(l=>`<button data-v="${l}" class="${G.level===l?'on':''}">${l==='all'?tz('all'):l}</button>`).join('')}</span></div>
     <div class="row" style="margin-bottom:14px"><span class="sub">${tx('speed')}</span><span class="seg" id="sgRate">${['slow','normal','fast'].map(r=>`<button data-v="${r}" class="${Settings.rate===r?'on':''}">${tz(r)}</button>`).join('')}</span></div>
@@ -294,9 +355,9 @@ function newQ(){ const s=qs[qi]; ans=s.a.map(a=>a===0?0:null); checked=false; re
 function renderPlay(){
   const s=qs[qi], listen=G.mode==='listen', simp=Settings.script==='simp';
   const chars=simp?s.s:s.t;
-  let html=header()+`<div class="card"><div class="prog"><span>${tz('q')} ${qi+1} / ${qs.length}</span><span>${s.lv}</span></div>`;
-  if(listen) html+=`<div class="listen"><button class="spk" id="bSpk" aria-label="${tz('replay')}">🔊</button><div class="sub">${checked?tz('replay'):tz('listenFirst')}${Settings.lang==='zh'?'':'<br>'+(checked?tl('replay'):tl('listenFirst'))}</div></div>`;
-  html+='<div class="words">';
+  let html=header()+`<div class="card"><div class="prog"><span class="tag">${tz('case')} ${s.id}</span>${steps(qi,qs.length)}</div>`;
+  if(listen) html+=`<div class="listen"><button class="spk" id="bSpk" aria-label="${tz('replay')}">🔊</button><span class="reels"><i></i><i></i></span><div class="sub">${checked?tz('replay'):tz('listenFirst')}${Settings.lang==='zh'?'':'<br>'+(checked?tl('replay'):tl('listenFirst'))}</div></div>`;
+  html+=`<div class="words${s.t.length>=10?' compact':''}">`;
   let pos=0;
   s.w.forEach(n=>{
     html+='<div class="word">';
@@ -308,7 +369,7 @@ function renderPlay(){
       const hz=(!listen||checked)?chars[i]:'';
       html+=`<div class="${cls}" data-i="${i}"><div class="hz">${hz}</div><div class="py${v&&!neutral?' done':''}">${shown}</div>`;
       if(neutral) html+=`<div class="neu">${tz('neutral')}</div>`;
-      else html+=`<div class="tones">${[1,2,3,4].map(t=>`<button data-t="${t}" class="${v===t?'on':''}" ${checked?'disabled':''} aria-label="tone ${t}">${TMARK[t]}<small>${t}</small></button>`).join('')}</div>`;
+      else html+=`<div class="tones">${[1,2,3,4].map(t=>`<button data-t="${t}" class="${v===t?'on':''}" ${checked?'disabled':''} aria-label="tone ${t}">${toneSvg(t)}<small>${t}</small></button>`).join('')}</div>`;
       if(checked&&!neutral) html+=`<div class="fix">${v===a?'':fix}</div>`;
       html+='</div>';
     }
@@ -317,7 +378,7 @@ function renderPlay(){
   html+='</div>';
   const filled=ans.every(x=>x!==null);
   if(!checked){
-    html+=`<div class="row" style="margin-top:12px"><button class="btn" id="bCheck" ${filled?'':'disabled'}>${tz('check')}</button>${filled?'':`<span class="sub">${tz('fillAll')}</span>`}</div>`;
+    html+=`<div class="row" style="margin-top:12px"><button class="btn" id="bCheck" ${filled?'':'disabled'}>${MAG}${tz('check')}</button>${filled?'':`<span class="sub">${tz('fillAll')}</span>`}</div>`;
   } else {
     const bad=s.a.reduce((n,a,i)=>n+(a!==0&&ans[i]!==a?1:0),0), need=s.a.filter(a=>a!==0).length;
     const full=chars.map((c,i)=>c).join('');
@@ -343,7 +404,7 @@ function doCheck(){
 }
 function renderResult(){
   const ranked=G.level==='all'&&tot.syl>0, score=tot.syl?Math.round(tot.good/tot.syl*1000):0;
-  app.innerHTML=header()+`<div class="card"><div class="sub">${tz('result')}</div><div class="big">${tot.good} / ${tot.syl}</div><div class="score">${tz('goodSyl')}　${tz('accuracy')} ${pct(score)}</div><div class="score">${tz('perfect')}：${tot.perfect} / ${qs.length}</div>
+  app.innerHTML=header()+`<div class="card vprint vtop"><div class="sub">${tz('result')}</div><div class="big">${tot.good} / ${tot.syl}</div><div class="rank">${rankIcon(score)}${tz(score>=950?'rankA':score>=800?'rankB':'rankC')}${Settings.lang==='zh'?'':' · '+tl(score>=950?'rankA':score>=800?'rankB':'rankC')}</div><div class="score">${tz('goodSyl')}　${tz('accuracy')} ${pct(score)}</div><div class="score">${tz('perfect')}：${tot.perfect} / ${qs.length}</div>
   <div class="lbmsg" id="lbMsg">${ranked?tz('sending'):tz('notRanked')}${!ranked&&Settings.lang!=='zh'?'<br>'+tl('notRanked'):''}</div>
   <div class="row" style="margin-top:12px"><button class="btn" id="bAgain">${tz('again')}</button><button class="btn ghost" id="bBoard">🏆 ${tz('board')}</button><button class="btn ghost" id="bHome">${tz('home')}</button></div></div>`;
   bindHeader();

@@ -26,7 +26,10 @@ with sync_playwright() as p:
     page.add_init_script(FAKE_SYNTH)
     page.goto(URL)
     ok('聲調偵探' in page.inner_text('h1'), '標題')
-    ok('本調' in page.inner_text('.note'), '首頁有「以本調為主」註記')
+    ok(page.query_selector('.note') is None, '首頁預設不顯示說明，字少')
+    page.click('#bHelp')
+    ok('本調' in page.inner_text('.note'), '按「說明」才出現「以本調為主」註記')
+    page.click('#bHelp')
 
     # --- 選「全部」沒填暱稱不能開始 ---
     page.click('#chMode button[data-v=read]'); page.click('#bStart')
@@ -61,7 +64,9 @@ with sync_playwright() as p:
 
     # --- 聽句子模式：先藏漢字、會唸、答錯顯示正確 ---
     page.click('#chMode button[data-v=listen]')
-    ok('機器' in page.inner_text('.note'), '聽力模式有機器變調註記')
+    page.click('#bHelp')
+    ok('機器' in page.inner_text('.note'), '聽力模式「說明」裡有機器變調註記')
+    page.click('#bHelp')
     page.click('#bStart')
     hz = ''.join(page.eval_on_selector_all('.syl .hz', 'els=>els.map(e=>e.textContent)'))
     ok(hz == '', '聽力模式檢查前不顯示漢字')
@@ -84,6 +89,16 @@ with sync_playwright() as p:
     ok('Detective' in page.inner_text('h1') and 'Siguiente' not in page.inner_text('body') and 'Check' not in page.inner_text('.res'), '純中文模式沒有西文英文說明')
     # 手機寬度不橫向捲動
     ok(page.evaluate('document.documentElement.scrollWidth <= window.innerWidth + 1'), '375px 寬沒有橫向捲動')
+    # 長句（10 音節以上）自動縮窄：卡片加 compact、手機寬度不橫向捲動、仍能填完並破案
+    page.goto(URL); page.evaluate("()=>{const a=SENTENCES.filter(s=>s.id==='B1-041');SENTENCES.splice(0,SENTENCES.length,...a)}")
+    page.fill('#nm', 'T'); page.click('#bStart')
+    ok(page.query_selector('.words.compact') is not None, '15 音節的長句自動縮窄（compact）')
+    for i in range(15):
+        if page.query_selector(f'.syl[data-i="{i}"] .tones'): page.click(f'.syl[data-i="{i}"] .tones button[data-t="1"]')
+    ok(not page.is_disabled('#bCheck') and page.evaluate('document.documentElement.scrollWidth <= window.innerWidth + 1'), '長句填完可破案，且沒有橫向捲動')
+    page.goto(URL); page.evaluate("()=>{const a=SENTENCES.filter(s=>s.id==='A1-005');SENTENCES.splice(0,SENTENCES.length,...a)}")
+    page.fill('#nm', 'T'); page.click('#bStart')
+    ok(page.query_selector('.words.compact') is None, '短句不縮窄')
     # 版權列
     ok('保留所有權利' in page.inner_text('#hgCopy'), '版權列')
     # 設定共用
