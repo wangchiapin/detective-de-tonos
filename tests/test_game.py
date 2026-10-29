@@ -89,6 +89,18 @@ with sync_playwright() as p:
     # 設定共用
     st = json.loads(page.evaluate("localStorage.getItem('hanziGames.settings')"))
     ok(st['script'] == 'simp' and st['lang'] == 'zh', '共用設定寫入 hanziGames.settings：' + json.dumps(st))
+    # 分享連結預覽（game-kit 檢查清單第 13 項）：名稱、縮圖
+    og = {m.group(1): m.group(2) for m in re.finditer(r'<meta property="(og:[a-z:_]+)" content="([^"]*)"', (ROOT / 'index.html').read_text(encoding='utf8'))}
+    ok(og.get('og:title') == '聲調偵探 · Detective de tonos', 'og:title 是遊戲名稱：' + str(og.get('og:title')))
+    ok(og.get('og:url') == 'https://wangchiapin.github.io/detective-de-tonos/' and og.get('og:image') == og['og:url'] + 'og.jpg', 'og:url、og:image 網址正確')
+    jpg = (ROOT / 'og.jpg').read_bytes(); w = h = 0
+    i = 2
+    while i < len(jpg):   # 讀 JPEG 尺寸
+        if jpg[i] != 0xFF: break
+        mk = jpg[i + 1]; ln = int.from_bytes(jpg[i + 2:i + 4], 'big')
+        if mk in (0xC0, 0xC1, 0xC2): h = int.from_bytes(jpg[i + 5:i + 7], 'big'); w = int.from_bytes(jpg[i + 7:i + 9], 'big'); break
+        i += 2 + ln
+    ok((w, h) == (1200, 630) and og.get('og:image:width') == '1200' and og.get('og:image:height') == '630', 'og.jpg 存在且是 1200×630：%dx%d' % (w, h))
     ok(not errs, '沒有 JS 錯誤 ' + str(errs))
     page.screenshot(path=str(ROOT / 'tests' / 'shot_listen.png'))
     b.close()

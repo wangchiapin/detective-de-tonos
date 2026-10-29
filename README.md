@@ -17,6 +17,7 @@
 ## 檔案
 - `index.src.html`：遊戲本體（有 `/*@@…@@*/` 佔位）。
 - `data.js`：由 `build_data.js` 從 game-kit 的 `bank/A1.json` `A2.json` `B1.json` 產生（一、不已換成本調）。
+- `og.jpg`：分享連結的縮圖（1200×630），`index.src.html` 的 `<head>` 有對應的 og 標籤（名稱 `聲調偵探 · Detective de tonos`，要跟分享區卡片一致）。縮圖是 `python3 tools/make_og.py` 用遊戲真實畫面產生的（每次執行會抽不同句子）；改遊戲名稱或畫面風格後要重跑。
 - `index.html`：**單檔成品**（`build.js` 把資料與共用零件 settings／voicehint／copyright／plays 貼進去），GitHub Pages 讀這個。
 
 ## 重新產生
