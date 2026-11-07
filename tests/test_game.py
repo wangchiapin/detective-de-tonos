@@ -107,7 +107,7 @@ with sync_playwright() as p:
     # 分享連結預覽（game-kit 檢查清單第 13 項）：名稱、縮圖
     og = {m.group(1): m.group(2) for m in re.finditer(r'<meta property="(og:[a-z:_]+)" content="([^"]*)"', (ROOT / 'index.html').read_text(encoding='utf8'))}
     ok(og.get('og:title') == '聲調偵探 · Detective de tonos', 'og:title 是遊戲名稱：' + str(og.get('og:title')))
-    ok(og.get('og:url') == 'https://wangchiapin.github.io/detective-de-tonos/' and og.get('og:image') == og['og:url'] + 'og.jpg', 'og:url、og:image 網址正確')
+    ok(og.get('og:url') == 'https://wangchiapin.github.io/detective-de-tonos/' and re.fullmatch(re.escape(og['og:url'] + 'og.jpg') + r'(\?v=\d+)?', og.get('og:image') or ''), 'og:url、og:image 網址正確')
     jpg = (ROOT / 'og.jpg').read_bytes(); w = h = 0
     i = 2
     while i < len(jpg):   # 讀 JPEG 尺寸
