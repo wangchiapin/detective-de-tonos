@@ -208,7 +208,7 @@ const TXT={
   sending:{zh:['上傳中…','上传中…'],es:'Enviando…',en:'Sending…'},
   submitted:{zh:['✓ 已上傳到排行榜','✓ 已上传到排行榜'],es:'✓ Subido al ranking',en:'✓ Submitted to the leaderboard'},
   kept:{zh:['沒有超過你的最高分，排行榜維持原樣','没有超过你的最高分，排行榜维持原样'],es:'No superas tu mejor marca; el ranking no cambia',en:'Not above your best; the leaderboard is unchanged'},
-  submitFail:{zh:['上傳失敗，請檢查網路後再玩一次','上传失败，请检查网络后再玩一次'],es:'No se pudo enviar. Revisa la conexión y vuelve a jugar',en:'Could not submit. Check your connection and play again'},
+  submitFail:{zh:['上傳失敗，請檢查網路後再玩一次','上传失败，请检查网路后再玩一次'],es:'No se pudo enviar. Revisa la conexión y vuelve a jugar',en:'Could not submit. Check your connection and play again'},
   notRanked:{zh:['這局不上排行榜（只有選「全部」才會上榜）','这局不上排行榜（只有选“全部”才会上榜）'],es:'Esta partida no cuenta para el ranking (solo con «Todos»)',en:'This round is not ranked (only “All” counts)'},
   boardEmpty:{zh:['還沒有人上榜','还没有人上榜'],es:'Aún no hay nadie en el ranking',en:'No one is on the board yet'},
   boardFail:{zh:['排行榜讀取失敗','排行榜读取失败'],es:'No se pudo cargar el ranking',en:'Could not load the leaderboard'},
@@ -227,10 +227,10 @@ const TXT={
   rNote:{zh:['想補充的話（最多 100 字）','想补充的话（最多 100 字）'],es:'Comentario (máx. 100 caracteres)',en:'Comment (max 100 characters)'},
   rCancel:{zh:['取消','取消'],es:'Cancelar',en:'Cancel'},
   rSend:{zh:['送出','送出'],es:'Enviar',en:'Send'},
-  rSent:{zh:['已送出，謝謝你的回報','已送出，谢谢你的反馈'],es:'Enviado, ¡gracias!',en:'Sent, thank you!'},
+  rSent:{zh:['已送出，謝謝你的回報','已送出，谢谢你的回馈'],es:'Enviado, ¡gracias!',en:'Sent, thank you!'},
   rPick:{zh:['請先選一個原因','请先选一个原因'],es:'Elige un motivo',en:'Pick a reason'},
   rSending:{zh:['送出中…','送出中…'],es:'Enviando…',en:'Sending…'},
-  rFail:{zh:['送出失敗，請檢查網路再試一次','送出失败，请检查网络再试一次'],es:'No se pudo enviar. Revisa la conexión',en:'Could not send. Check your connection'}
+  rFail:{zh:['送出失敗，請檢查網路再試一次','送出失败，请检查网路再试一次'],es:'No se pudo enviar. Revisa la conexión',en:'Could not send. Check your connection'}
 };
 function tx(k){ const t=TXT[k]; const simp=Settings.script==='simp'; let z=t.zh[simp?1:0]; if(Settings.lang==='zh'||!(t.es||t.en)) return z; const o=Settings.lang==='en'?t.en:t.es; return z+(o?' · '+o:''); }
 function tz(k){ const t=TXT[k]; return t.zh[Settings.script==='simp'?1:0]; }
