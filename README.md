@@ -1,5 +1,7 @@
 # 聲調偵探 · Detective de tonos
 
+網址：https://wangchiapin.github.io/detective-de-tonos/
+
 給 Claude：改這個遊戲前先讀這份，再讀 game-kit 的 README。Ben 的規則：先討論、測好、問過才推（他說「推」才推）；用白話繁體中文說明。
 
 ## 玩法
