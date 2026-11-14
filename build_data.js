@@ -1,6 +1,6 @@
-// 用法：node build_data.js ../game-kit/bank  → 產生 data.js（遊戲用句庫：本調答案、無調拼音）
+// 用法：node build_data.js ../corre/bank  → 產生 data.js（備用快照：遊戲平常會直接讀 corre 網站上的最新句庫，讀不到才用這份）
 const fs=require('fs'), path=require('path');
-const dir=process.argv[2]||'../game-kit/bank';
+const dir=process.argv[2]||'../corre/bank';
 const MARK={ā:['a',1],á:['a',2],ǎ:['a',3],à:['a',4],ē:['e',1],é:['e',2],ě:['e',3],è:['e',4],ī:['i',1],í:['i',2],ǐ:['i',3],ì:['i',4],ō:['o',1],ó:['o',2],ǒ:['o',3],ò:['o',4],ū:['u',1],ú:['u',2],ǔ:['u',3],ù:['u',4],ǖ:['ü',1],ǘ:['ü',2],ǚ:['ü',3],ǜ:['ü',4]};
 function parse(syl){ let tone=0, plain=''; for(const c of syl){ if(MARK[c]){plain+=MARK[c][0]; tone=MARK[c][1];} else plain+=c; } return {plain,tone}; }
 const out=[], problems=[];
@@ -24,7 +24,7 @@ for(const L of ['A1','A2','B1']){
     out.push({id:s.id,lv:L,t:chars,s:simp,p:syls.map(x=>x[0]),a:syls.map(x=>x[1]),w:wl,es:s.es,en:s.en});
   }
 }
-fs.writeFileSync('data.js','/* 由 build_data.js 從 game-kit 句庫產生；一、不已換成本調 */\nconst SENTENCES='+JSON.stringify(out)+';\n');
+fs.writeFileSync('data.js','/* 備用快照：由 build_data.js 從 corre 的 bank/ 句庫產生（一、不已換成本調）；遊戲開啟時會改讀 corre 網站上的最新版 */\nconst SENTENCES='+JSON.stringify(out)+';\n');
 console.log('句數',out.length,'問題',problems.length); problems.slice(0,10).forEach(x=>console.log(x));
 const neu=out.reduce((n,s)=>n+s.a.filter(x=>x===0).length,0), all=out.reduce((n,s)=>n+s.a.length,0);
 console.log('音節總數',all,'輕聲',neu);

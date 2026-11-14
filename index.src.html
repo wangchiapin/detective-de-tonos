@@ -150,6 +150,48 @@ h1 svg.hat{width:28px;margin:0 0 0 6px;vertical-align:-4px}
 /*@@DATA@@*/
 </script>
 <script>
+/* 句庫來源：corre 網站上的 bank/A1／A2／B1.json（每天會新增句子，這裡不用再手動更新）。
+   上面 data.js 只是「備用快照」：網路讀不到、或檔案格式不對時就用它，遊戲照樣能玩。
+   轉換規則要跟 build_data.js 一致：一、不一律用本調；拼音拆成無調拼音＋聲調。 */
+(function(){
+  const BASE='https://wangchiapin.github.io/corre/bank/';
+  const MARK={ā:['a',1],á:['a',2],ǎ:['a',3],à:['a',4],ē:['e',1],é:['e',2],ě:['e',3],è:['e',4],ī:['i',1],í:['i',2],ǐ:['i',3],ì:['i',4],ō:['o',1],ó:['o',2],ǒ:['o',3],ò:['o',4],ū:['u',1],ú:['u',2],ǔ:['u',3],ù:['u',4],ǖ:['ü',1],ǘ:['ü',2],ǚ:['ü',3],ǜ:['ü',4]};
+  function parseSyl(syl){ let tone=0,plain=''; for(const c of syl){ if(MARK[c]){plain+=MARK[c][0];tone=MARK[c][1];} else plain+=c; } return {plain,tone}; }
+  function convert(L,j){
+    if(!j||!Array.isArray(j.sentences)||j.sentences.length<1) return null;
+    const out=[];
+    for(const s of j.sentences){
+      const chars=[],simp=[],syls=[]; let bad=false;
+      if(!s||!Array.isArray(s.trad)||!Array.isArray(s.simp)||!Array.isArray(s.pinyin)||s.trad.length!==s.simp.length||s.trad.length!==s.pinyin.length||typeof s.id!=='string') continue;
+      s.trad.forEach((t,i)=>{
+        const ps=String(s.pinyin[i]).split(' '),tc=[...t],sc=[...s.simp[i]];
+        if(ps.length!==tc.length||sc.length!==tc.length){bad=true;return;}
+        tc.forEach((c,k)=>{ let {plain,tone}=parseSyl(ps[k]); if(c==='不')tone=4; if(c==='一')tone=1; chars.push(c); simp.push(sc[k]); syls.push([plain,tone]); });
+      });
+      if(bad||!chars.length) continue;
+      out.push({id:s.id,lv:L,t:chars,s:simp,p:syls.map(x=>x[0]),a:syls.map(x=>x[1]),w:s.trad.map(t=>[...t].length),es:String(s.es||''),en:String(s.en||'')});
+    }
+    return out.length?out:null;
+  }
+  window.__loadBank=function(){
+    return Promise.all(['A1','A2','B1'].map(L=>{
+      const ctl=new AbortController(); const to=setTimeout(()=>ctl.abort(),8000);
+      return fetch(BASE+L+'.json',{signal:ctl.signal}).then(r=>{ if(!r.ok) throw new Error(L+' '+r.status); return r.json(); })
+        .then(j=>{ clearTimeout(to); const rows=convert(L,j); if(!rows) throw new Error(L+' 格式不對'); return [L,rows]; })
+        .catch(e=>{ clearTimeout(to); return null; });   // 這一級讀不到就維持備用快照
+    })).then(res=>{
+      let n=0;
+      res.forEach(x=>{ if(!x) return; const [L,rows]=x;
+        for(let i=SENTENCES.length-1;i>=0;i--) if(SENTENCES[i].lv===L) SENTENCES.splice(i,1);
+        SENTENCES.push(...rows); n++; });
+      window.__bankLive=n;   // 這次有幾級換成最新的（0～3）
+      return n;
+    });
+  };
+  window.__loadBank();
+})();
+</script>
+<script>
 (function(){
 /*@@SETTINGS@@*/
 

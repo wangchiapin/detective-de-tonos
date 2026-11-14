@@ -1,4 +1,4 @@
-// 用法：node build_data.js ../game-kit/bank && node build.js [../game-kit]  → 產生單檔 index.html
+// 用法：node build_data.js ../corre/bank && node build.js [../game-kit]  → 產生單檔 index.html
 const fs=require('fs'), path=require('path');
 const kit=process.argv[2]||'../game-kit';
 const rd=f=>fs.readFileSync(f,'utf8');
