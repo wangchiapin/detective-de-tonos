@@ -231,6 +231,9 @@ const TXT={
   next:{zh:['下一題','下一题'],es:'Siguiente',en:'Next'},
   finish:{zh:['看結果','看结果'],es:'Ver resultado',en:'See result'},
   again:{zh:['再玩一次','再玩一次'],es:'Jugar otra vez',en:'Play again'},
+  share:{zh:['分享成績','分享成绩'],es:'Compartir resultado',en:'Share result'},
+  shareCopied:{zh:['已複製','已复制'],es:'Copiado',en:'Copied'},
+  shareFail:{zh:['複製失敗','复制失败'],es:'No se pudo copiar',en:'Copy failed'},
   home:{zh:['回首頁','回首页'],es:'Inicio',en:'Home'},
   menu:{zh:['主選單','主选单'],es:'Menú',en:'Menu'},
   leaveQ:{zh:['離開這一輪？這輪成績不會算','离开这一轮？这轮成绩不会算'],es:'¿Salir de esta ronda? No se guardará el puntaje',en:'Leave this round? Your score won\'t be saved'},
@@ -523,13 +526,57 @@ function doCheck(){
   tot.syl+=need; tot.good+=need-bad; if(bad===0) tot.perfect++;
   renderPlay();
 }
+/* SHARE-BEGIN（HGShare：來自 game-kit parts/share.js）。統一規則：結算畫面「再玩一次」之後，空心外框，0 分不顯示 */
+const HGShare = (() => {
+  async function copyText(s) {
+    try { if (navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText(s); return true; } } catch (e) {}
+    try {
+      const ta = document.createElement('textarea'); ta.value = s; ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+      document.body.appendChild(ta); ta.select();
+      const r = document.execCommand('copy'); ta.remove(); return !!r;
+    } catch (e) { return false; }
+  }
+  async function send({ title, text, url }) {
+    if (navigator.share) {
+      try { await navigator.share({ title, text, url }); return 'shared'; }
+      catch (e) { if (e && e.name === 'AbortError') return 'aborted'; }   // 其他錯誤改走複製
+    }
+    return (await copyText(text + '\n' + url)) ? 'copied' : 'failed';
+  }
+  return { copyText, send };
+})();
+/* SHARE-END */
+const SHARE_URL='https://wangchiapin.github.io/detective-de-tonos/?ref=share';   // 公開頁＋分享記號
+const SHARE_MSG={
+  tw:(p,g,n)=>(p||'我')+'在「聲調偵探」猜對了 '+g+' / '+n+' 個聲調！你也來試試',
+  cn:(p,g,n)=>(p||'我')+'在「声调侦探」猜对了 '+g+' / '+n+' 个声调！你也来试试',
+  es:(p,g,n)=>(p?p+' acertó':'¡Acerté')+' '+g+' de '+n+' tonos en «Detective de tonos»'+(p?'':'!')+' Inténtalo tú también',
+  en:(p,g,n)=>(p?p+' got':'I got')+' '+g+' of '+n+' tones right in "Detective de tonos"! Try it too'
+};
+let shareBusy=false, shareTimer=0;
+async function doShare(){
+  if(shareBusy||tot.good<=0)return;
+  shareBusy=true;
+  try{
+    const code=Settings.lang==='es'?'es':Settings.lang==='en'?'en':(Settings.script==='simp'?'cn':'tw');
+    const text=SHARE_MSG[code](getName(),tot.good,tot.syl);
+    const r=await HGShare.send({title:(Settings.script==='simp'?'声调侦探':'聲調偵探')+' · Detective de tonos',text,url:SHARE_URL});
+    if(r==='copied'||r==='failed'){
+      const b=document.getElementById('bShare'); if(b)b.textContent=tz(r==='copied'?'shareCopied':'shareFail');
+      clearTimeout(shareTimer);
+      shareTimer=setTimeout(()=>{shareTimer=0;const c=document.getElementById('bShare'); if(c)c.textContent=tz('share');},2200);
+    }
+  }finally{shareBusy=false;}
+}
 function renderResult(){
   const ranked=G.level==='all'&&tot.syl>0, score=tot.syl?Math.round(tot.good/tot.syl*1000):0;
   app.innerHTML=header()+`<div class="card vprint vtop"><div class="sub">${tz('result')}</div><div class="big">${tot.good} / ${tot.syl}</div><div class="rank">${rankIcon(score)}${tz(score>=950?'rankA':score>=800?'rankB':'rankC')}${Settings.lang==='zh'?'':' · '+tl(score>=950?'rankA':score>=800?'rankB':'rankC')}</div><div class="score">${tz('goodSyl')}　${tz('accuracy')} ${pct(score)}</div><div class="score">${tz('perfect')}：${tot.perfect} / ${qs.length}</div>
   <div class="lbmsg" id="lbMsg">${ranked?tz('sending'):tz('notRanked')}${!ranked&&Settings.lang!=='zh'?'<br>'+tl('notRanked'):''}</div>
-  <div class="row" style="margin-top:12px"><button class="btn" id="bAgain">${tz('again')}</button><button class="btn ghost" id="bBoard">🏆 ${tz('board')}</button><button class="btn ghost" id="bHome">${tz('home')}</button></div></div>`;
+  <div class="row" style="margin-top:12px"><button class="btn" id="bAgain">${tz('again')}</button>${tot.good>0?`<button class="btn ghost" id="bShare" style="border-width:2px">${tz('share')}</button>`:''}<button class="btn ghost" id="bBoard">🏆 ${tz('board')}</button><button class="btn ghost" id="bHome">${tz('home')}</button></div></div>`;
   bindHeader();
   document.getElementById('bAgain').onclick=startGame;
+  const bsh=document.getElementById('bShare'); if(bsh) bsh.onclick=doShare;
   document.getElementById('bBoard').onclick=()=>{ boardMode=G.mode; screen='board'; render(true); };
   document.getElementById('bHome').onclick=()=>{ screen='home'; render(true); };
   if(ranked&&!resultSent){
